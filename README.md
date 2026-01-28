@@ -4,7 +4,7 @@ Interactive visualization of coordinated OpenStreetMap mapping efforts in respon
 
 ## Live Demo
 
-**[View the interactive map](https://giovand.github.io/osm-moz-jan2026/)**
+**[View the interactive map](https://cgiovando.github.io/osm-moz-jan2026/)**
 
 ## Overview
 
