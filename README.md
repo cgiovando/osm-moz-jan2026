@@ -12,10 +12,10 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **1,541** features mapped
-- **26** contributors
-- **410** peak day edits (January 26, 2026)
-- Date range: December 28, 2025 to January 27, 2026
+- **52,249** features mapped
+- **250** contributors
+- **13,295** peak day edits (January 25, 2026)
+- Date range: December 29, 2025 to January 28, 2026
 
 ## Features
 

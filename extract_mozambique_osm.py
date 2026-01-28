@@ -22,7 +22,8 @@ FLOOD_AREAS = {
 }
 
 # Combined bounding box for main affected area (Gaza/Sofala focus)
-MAIN_BBOX = (-24.5, 32.0, -19.0, 36.0)
+# Extended south to -25.5 to include Chicumbane (HOT project 39738)
+MAIN_BBOX = (-25.5, 32.0, -19.0, 36.0)
 
 def query_osm_with_metadata(bbox, days_back=30, feature_types=None):
     """

@@ -1,86 +1,86 @@
 {
-  "total_features": 1541,
-  "unique_contributors": 26,
+  "total_features": 52249,
+  "unique_contributors": 250,
   "top_contributors": [
     [
-      "KingVik",
-      523
+      "mjgk",
+      8144
     ],
     [
-      "Justinebaekc",
-      311
+      "chihana",
+      5242
     ],
     [
-      "rrissiek",
-      188
+      "JPMiene",
+      2388
     ],
     [
-      "cactolith",
-      143
+      "Dimitrios Spatharis",
+      1870
     ],
     [
-      "zorque",
-      106
+      "mepng",
+      1793
     ],
     [
-      "Joseph Munyenze",
-      62
+      "Wurzel3",
+      1392
     ],
     [
-      "tshedy",
-      38
+      "Norbert Dichter",
+      1051
     ],
     [
-      "judithmurage",
-      26
+      "SomethingEllis",
+      998
     ],
     [
-      "Pikinini_T",
-      25
+      "EsthersGeo",
+      853
     ],
     [
-      "ahartman113",
-      23
-    ],
-    [
-      "KavirDesert",
-      17
+      "Sally Mlingi",
+      836
     ],
     [
       "Adrian Shobrooke",
-      16
+      829
     ],
     [
-      "KwaXoloXolo",
-      11
+      "arpprasad07",
+      730
     ],
     [
-      "maja_turkalj",
-      11
+      "Kraan46",
+      679
     ],
     [
-      "TriglavMountain",
-      10
+      "DMcDowall",
+      589
     ],
     [
-      "FRANCIS NDIRITU",
-      10
+      "Metauro",
+      554
     ],
     [
-      "KyogaLake",
-      4
+      "melody_Tej",
+      532
     ],
     [
-      "Wooshness",
-      3
+      "KingVik",
+      524
     ],
     [
-      "LakeDian",
-      3
+      "BB486",
+      511
     ],
     [
-      "gscholz",
-      2
+      "BR_pebble",
+      477
+    ],
+    [
+      "Justinebaekc",
+      447
     ]
   ],
   "edits_by_date": [
@@ -106,7 +106,7 @@
     ],
     [
       "2026-01-04",
-      2
+      25
     ],
     [
       "2026-01-05",
@@ -130,7 +130,7 @@
     ],
     [
       "2026-01-10",
-      22
+      26
     ],
     [
       "2026-01-11",
@@ -154,7 +154,7 @@
     ],
     [
       "2026-01-19",
-      1
+      2
     ],
     [
       "2026-01-20",
@@ -162,27 +162,31 @@
     ],
     [
       "2026-01-21",
-      1
+      6
     ],
     [
       "2026-01-23",
-      7
+      614
+    ],
+    [
+      "2026-01-24",
+      6443
     ],
     [
       "2026-01-25",
-      243
+      13295
     ],
     [
       "2026-01-26",
-      410
+      13068
     ],
     [
       "2026-01-27",
-      40
+      8999
     ],
     [
       "2026-01-28",
-      95
+      9051
     ]
   ],
   "date_range": {
