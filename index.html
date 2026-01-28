@@ -86,21 +86,22 @@
         .gridline { position: absolute; left: 0; right: 0; border-top: 1px solid #2a2a4a; }
         .gridline.major { border-top-color: #3a3a5a; }
 
-        .bar-chart { display: flex; align-items: flex-end; height: 100%; gap: 2px; width: 100%; position: relative; z-index: 1; }
+        .bar-chart { display: flex; align-items: flex-end; height: 100%; gap: 1px; width: 100%; position: relative; z-index: 1; }
         .bar {
             background: linear-gradient(to top, #4ecca3, #45b39d);
             flex: 1;
-            min-width: 20px;
+            min-width: 2px;
             cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 2px 2px 0 0;
+            transition: all 0.1s;
+            border-radius: 1px 1px 0 0;
         }
         .bar:hover { background: linear-gradient(to top, #5ddbaf, #4ecca3); }
         .bar.selected { background: linear-gradient(to top, #f39c12, #e67e22); }
         .bar.dimmed { opacity: 0.3; }
+        .bar.day-start { border-left: 1px solid rgba(255,255,255,0.3); }
 
-        .x-axis { display: flex; justify-content: space-between; margin-top: 5px; padding: 0 10px; }
-        .x-label { font-size: 10px; color: #666; }
+        .x-axis { position: relative; height: 20px; margin-top: 5px; }
+        .x-label { font-size: 10px; color: #666; position: absolute; transform: translateX(-50%); white-space: nowrap; }
 
         /* Animation controls */
         .animation-controls {
@@ -112,7 +113,7 @@
             background: #1a1a2e;
             border-radius: 6px;
         }
-        .play-btn {
+        .play-btn, .clear-btn {
             background: #4ecca3;
             color: #1a1a2e;
             border: none;
@@ -122,8 +123,10 @@
             font-weight: 600;
             font-size: 0.9em;
         }
-        .play-btn:hover { background: #5ddbaf; }
+        .play-btn:hover, .clear-btn:hover { background: #5ddbaf; }
         .play-btn.playing { background: #e74c3c; }
+        .clear-btn { background: #666; color: #eee; }
+        .clear-btn:hover { background: #888; }
         .time-slider {
             flex: 1;
             -webkit-appearance: none;
@@ -199,10 +202,6 @@
                 <div class="stat-value" id="peak-edits">-</div>
                 <div class="stat-label">Peak Day Edits</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="date-range">-</div>
-                <div class="stat-label">Date Range</div>
-            </div>
 
             <div class="section-title">Feature Layers</div>
             <div class="layer-toggle" data-layer="building">
@@ -210,12 +209,12 @@
                 <span class="layer-name">Buildings</span>
                 <span class="layer-count" id="count-building">0</span>
             </div>
-            <div class="layer-toggle" data-layer="highway">
+            <div class="layer-toggle inactive" data-layer="highway">
                 <div class="color-dot" style="background: #3498db;"></div>
                 <span class="layer-name">Highways</span>
                 <span class="layer-count" id="count-highway">0</span>
             </div>
-            <div class="layer-toggle" data-layer="waterway">
+            <div class="layer-toggle inactive" data-layer="waterway">
                 <div class="color-dot" style="background: #2ecc71;"></div>
                 <span class="layer-name">Waterways</span>
                 <span class="layer-count" id="count-waterway">0</span>
@@ -253,8 +252,9 @@
                 <div class="x-axis" id="x-axis"></div>
                 <div class="animation-controls">
                     <button class="play-btn" id="play-btn">▶ Play</button>
+                    <button class="clear-btn" id="clear-btn">Clear</button>
                     <input type="range" class="time-slider" id="time-slider" min="0" max="100" value="100">
-                    <span class="current-time" id="current-time">All dates</span>
+                    <span class="current-time" id="current-time">All times</span>
                 </div>
             </div>
             <div id="map">
@@ -297,7 +297,8 @@
                 }]
             },
             center: [33.5, -24.95],
-            zoom: 10
+            zoom: 10,
+            hash: true // Enable URL hash with zoom/lat/lng
         });
 
         // Add navigation controls
@@ -306,7 +307,7 @@
         // State
         let stats = null;
         let hotProjectsBounds = null;
-        let activeTypes = { building: true, highway: true, waterway: true };
+        let activeTypes = { building: true, highway: false, waterway: false };
         let hotProjectsVisible = true;
         let allTimestamps = [];
         let currentTimeFilter = null;
@@ -324,49 +325,80 @@
                 const peakDay = data.edits_by_date.reduce((max, d) => d[1] > max[1] ? d : max, ['', 0]);
                 document.getElementById('peak-edits').textContent = peakDay[1].toLocaleString();
 
-                const dates = data.edits_by_date.map(d => d[0]);
-                const formatDate = d => {
-                    const [y, m, day] = d.split('-');
-                    return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]} ${parseInt(day)}, ${y}`;
-                };
-                document.getElementById('date-range').textContent = `${formatDate(dates[0])} to ${formatDate(dates[dates.length-1])}`;
+                // Build timeline with hourly bars (more detailed view)
+                const hourlyData = data.edits_by_hour || data.edits_by_date;
+                buildTimeline(hourlyData, data.edits_by_date);
 
-                // Build timeline
-                buildTimeline(data.edits_by_date);
-
-                // Setup time slider
-                setupTimeSlider(data.edits_by_date);
+                // Setup time slider with hourly data for fine-grained animation
+                setupTimeSlider(hourlyData);
             });
 
-        // Build timeline
-        function buildTimeline(editsByDate) {
-            const maxVal = Math.max(...editsByDate.map(d => d[1]));
+        // Clear button handler
+        document.getElementById('clear-btn').addEventListener('click', clearAll);
+
+        // Build timeline with hourly bars and day markers
+        function buildTimeline(editsByHour, editsByDate) {
+            const maxVal = Math.max(...editsByHour.map(d => d[1]));
             buildYAxis(maxVal);
 
             const chart = document.getElementById('bar-chart');
             chart.innerHTML = '';
 
-            editsByDate.forEach(([date, count]) => {
+            // Track day boundaries for markers
+            let prevDate = null;
+
+            editsByHour.forEach(([timestamp, count]) => {
                 const bar = document.createElement('div');
                 bar.className = 'bar';
                 bar.style.height = `${(count / maxVal) * 100}%`;
+
+                // Extract date part (YYYY-MM-DD) from timestamp (YYYY-MM-DDTHH)
+                const date = timestamp.slice(0, 10);
+                const hour = timestamp.slice(11, 13);
                 bar.dataset.date = date;
-                bar.title = `${date}: ${count.toLocaleString()} edits`;
+                bar.dataset.hour = timestamp;
+
+                // Mark day boundaries with a visual separator
+                if (prevDate && date !== prevDate) {
+                    bar.classList.add('day-start');
+                }
+                prevDate = date;
+
+                // Format tooltip
+                const [y, m, d] = date.split('-');
+                const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
+                bar.title = `${monthName} ${parseInt(d)}, ${hour}:00 - ${count.toLocaleString()} edits`;
+
                 bar.addEventListener('click', () => selectDate(date));
                 chart.appendChild(bar);
             });
 
-            // X-axis labels
+            // X-axis labels - show day labels
             const xAxis = document.getElementById('x-axis');
             xAxis.innerHTML = '';
-            const step = Math.max(1, Math.floor(editsByDate.length / 5));
-            for (let i = 0; i < editsByDate.length; i += step) {
+
+            // Find unique dates and their positions
+            const datePositions = [];
+            let currentDate = null;
+            editsByHour.forEach(([timestamp], idx) => {
+                const date = timestamp.slice(0, 10);
+                if (date !== currentDate) {
+                    datePositions.push({ date, idx });
+                    currentDate = date;
+                }
+            });
+
+            // Create labels for each day
+            datePositions.forEach(({ date, idx }) => {
                 const label = document.createElement('span');
                 label.className = 'x-label';
-                const [y, m, d] = editsByDate[i][0].split('-');
-                label.textContent = `${['Jan','Feb','Mar'][parseInt(m)-1]} ${parseInt(d)}`;
+                const [y, m, d] = date.split('-');
+                label.textContent = `${['Jan','Feb','Mar','Apr','May'][parseInt(m)-1]} ${parseInt(d)}`;
+                // Position label based on where day starts
+                label.style.position = 'absolute';
+                label.style.left = `${(idx / editsByHour.length) * 100}%`;
                 xAxis.appendChild(label);
-            }
+            });
         }
 
         // Build Y-axis
@@ -400,12 +432,12 @@
             }
         }
 
-        // Select date
+        // Select date (highlights all hourly bars for that date)
         function selectDate(date) {
             document.querySelectorAll('.bar').forEach(bar => {
                 bar.classList.remove('selected', 'dimmed');
                 if (date && bar.dataset.date !== date) bar.classList.add('dimmed');
-                if (bar.dataset.date === date) bar.classList.add('selected');
+                else if (bar.dataset.date === date) bar.classList.add('selected');
             });
 
             const label = document.getElementById('selected-date-label');
@@ -430,74 +462,234 @@
             updateMapFilter();
         }
 
-        // Update map filter based on time and layer toggles
+        // Update map based on time and layer toggles using opacity
         function updateMapFilter() {
-            const typeFilters = [];
-            if (activeTypes.building) typeFilters.push(['has', 'building']);
-            if (activeTypes.highway) typeFilters.push(['has', 'highway']);
-            if (activeTypes.waterway) typeFilters.push(['has', 'waterway']);
-
-            let filter = typeFilters.length > 0 ? ['any', ...typeFilters] : ['==', 1, 0];
-
-            if (currentTimeFilter) {
-                // Filter features where timestamp starts with the selected date
-                filter = ['all', filter, ['==', ['slice', ['get', 'timestamp'], 0, 10], currentTimeFilter]];
+            // If there's an animation timestamp active, use that
+            if (currentAnimationTimestamp) {
+                filterUpToTimestamp(currentAnimationTimestamp);
+                return;
             }
 
-            ['buildings-layer', 'highways-layer', 'waterways-layer'].forEach(layerId => {
-                if (map.getLayer(layerId)) {
-                    map.setFilter(layerId, filter);
-                }
-            });
+            // Otherwise show all features based on layer toggles and date filter
+            let opacityExpr;
+            if (currentTimeFilter) {
+                // Date-specific filter
+                opacityExpr = [
+                    'case',
+                    ['all',
+                        ['has', 'timestamp'],
+                        ['==', ['slice', ['get', 'timestamp'], 0, 10], currentTimeFilter]
+                    ],
+                    1,
+                    0
+                ];
+            } else {
+                // Show all
+                opacityExpr = 1;
+            }
+
+            // Update building layer
+            if (map.getLayer('buildings-layer')) {
+                const buildingOpacity = activeTypes.building ?
+                    (typeof opacityExpr === 'number' ? 0.85 : ['*', 0.85, opacityExpr]) : 0;
+                map.setPaintProperty('buildings-layer', 'fill-opacity', buildingOpacity);
+            }
+            if (map.getLayer('buildings-outline-layer')) {
+                const outlineOpacity = activeTypes.building ?
+                    (typeof opacityExpr === 'number' ? 0.9 : ['*', 0.9, opacityExpr]) : 0;
+                map.setPaintProperty('buildings-outline-layer', 'line-opacity', outlineOpacity);
+            }
+            if (map.getLayer('buildings-circles-layer')) {
+                const circleOpacity = activeTypes.building ?
+                    (typeof opacityExpr === 'number' ? 0.9 : ['*', 0.9, opacityExpr]) : 0;
+                map.setPaintProperty('buildings-circles-layer', 'circle-opacity', circleOpacity);
+            }
+
+            // Update highway layer
+            if (map.getLayer('highways-layer')) {
+                const highwayOpacity = activeTypes.highway ?
+                    (typeof opacityExpr === 'number' ? 0.8 : ['*', 0.8, opacityExpr]) : 0;
+                map.setPaintProperty('highways-layer', 'line-opacity', highwayOpacity);
+            }
+
+            // Update waterway layer
+            if (map.getLayer('waterways-layer')) {
+                const waterwayOpacity = activeTypes.waterway ?
+                    (typeof opacityExpr === 'number' ? 0.8 : ['*', 0.8, opacityExpr]) : 0;
+                map.setPaintProperty('waterways-layer', 'line-opacity', waterwayOpacity);
+            }
         }
 
-        // Setup time slider for animation
-        function setupTimeSlider(editsByDate) {
+        // Setup time slider for animation (hourly granularity)
+        function setupTimeSlider(editsByHour) {
             const slider = document.getElementById('time-slider');
             const timeDisplay = document.getElementById('current-time');
             const playBtn = document.getElementById('play-btn');
 
-            // Create cumulative timestamps
-            allTimestamps = editsByDate.map(d => d[0]);
+            // Create cumulative timestamps (hourly: YYYY-MM-DDTHH)
+            allTimestamps = editsByHour.map(d => d[0]);
             slider.max = allTimestamps.length;
             slider.value = allTimestamps.length;
 
             slider.addEventListener('input', () => {
                 const idx = parseInt(slider.value);
                 if (idx >= allTimestamps.length) {
-                    timeDisplay.textContent = 'All dates';
+                    timeDisplay.textContent = 'All times';
                     clearTimeFilter();
                 } else {
-                    const date = allTimestamps[idx];
-                    timeDisplay.textContent = `Up to ${date}`;
-                    filterUpToDate(date);
+                    const ts = allTimestamps[idx];
+                    timeDisplay.textContent = formatTimestamp(ts);
+                    filterUpToTimestamp(ts);
                 }
             });
 
             playBtn.addEventListener('click', toggleAnimation);
         }
 
-        // Filter up to date (cumulative)
-        function filterUpToDate(date) {
-            const typeFilters = [];
-            if (activeTypes.building) typeFilters.push(['has', 'building']);
-            if (activeTypes.highway) typeFilters.push(['has', 'highway']);
-            if (activeTypes.waterway) typeFilters.push(['has', 'waterway']);
+        // Format timestamp for display
+        function formatTimestamp(ts) {
+            // ts format: YYYY-MM-DDTHH
+            const date = ts.slice(0, 10);
+            const hour = ts.slice(11, 13);
+            const [y, m, d] = date.split('-');
+            const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
+            return `${monthName} ${parseInt(d)}, ${hour}:00`;
+        }
 
-            let filter = typeFilters.length > 0 ? ['any', ...typeFilters] : ['==', 1, 0];
+        // Filter up to timestamp (cumulative, hourly)
+        // Uses opacity-based animation to avoid MapLibre tessellation artifacts
+        function filterUpToTimestamp(ts) {
+            currentAnimationTimestamp = ts;
 
-            // Filter features where timestamp <= selected date
-            filter = ['all', filter, ['<=', ['slice', ['get', 'timestamp'], 0, 10], date]];
+            // Create opacity expression: 1 if timestamp <= ts, 0 otherwise
+            const opacityExpression = [
+                'case',
+                ['all',
+                    ['has', 'timestamp'],
+                    ['<=', ['slice', ['get', 'timestamp'], 0, 13], ts]
+                ],
+                1, // visible
+                0  // hidden
+            ];
 
-            ['buildings-layer', 'highways-layer', 'waterways-layer'].forEach(layerId => {
-                if (map.getLayer(layerId)) {
-                    map.setFilter(layerId, filter);
-                }
+            // Expression for "new" features (matching current timestamp exactly)
+            const isNewFeature = [
+                'all',
+                ['has', 'timestamp'],
+                ['==', ['slice', ['get', 'timestamp'], 0, 13], ts]
+            ];
+
+            // Update building layer
+            if (map.getLayer('buildings-layer')) {
+                const buildingOpacity = activeTypes.building ?
+                    ['*', 0.85, opacityExpression] : 0;
+                map.setPaintProperty('buildings-layer', 'fill-opacity', buildingOpacity);
+                // Flash new buildings with bright color
+                map.setPaintProperty('buildings-layer', 'fill-color', [
+                    'case', isNewFeature, '#ffff00', '#ff6b6b'
+                ]);
+            }
+            if (map.getLayer('buildings-outline-layer')) {
+                const outlineOpacity = activeTypes.building ?
+                    ['*', 0.9, opacityExpression] : 0;
+                map.setPaintProperty('buildings-outline-layer', 'line-opacity', outlineOpacity);
+            }
+            if (map.getLayer('buildings-circles-layer')) {
+                const circleOpacity = activeTypes.building ?
+                    ['*', 0.9, opacityExpression] : 0;
+                map.setPaintProperty('buildings-circles-layer', 'circle-opacity', circleOpacity);
+                // Flash new buildings with bright yellow and larger size
+                map.setPaintProperty('buildings-circles-layer', 'circle-color', [
+                    'case', isNewFeature, '#ffff00', '#ff6b6b'
+                ]);
+                map.setPaintProperty('buildings-circles-layer', 'circle-radius', [
+                    'case', isNewFeature,
+                    // Larger radius for new features
+                    ['interpolate', ['linear'], ['zoom'],
+                        7, 2, 8, 2.5, 9, 3, 10, 3.5, 11, 4, 12, 5, 13, 6
+                    ],
+                    // Normal radius
+                    ['interpolate', ['linear'], ['zoom'],
+                        7, 0.5, 8, 0.6, 9, 0.8, 10, 1, 11, 1.25, 12, 1.5, 13, 2
+                    ]
+                ]);
+            }
+
+            // Update highway layer
+            if (map.getLayer('highways-layer')) {
+                const highwayOpacity = activeTypes.highway ?
+                    ['*', 0.8, opacityExpression] : 0;
+                map.setPaintProperty('highways-layer', 'line-opacity', highwayOpacity);
+                // Flash new highways
+                map.setPaintProperty('highways-layer', 'line-color', [
+                    'case', isNewFeature, '#ffff00', '#3498db'
+                ]);
+            }
+
+            // Update waterway layer
+            if (map.getLayer('waterways-layer')) {
+                const waterwayOpacity = activeTypes.waterway ?
+                    ['*', 0.8, opacityExpression] : 0;
+                map.setPaintProperty('waterways-layer', 'line-opacity', waterwayOpacity);
+                // Flash new waterways
+                map.setPaintProperty('waterways-layer', 'line-color', [
+                    'case', isNewFeature, '#ffff00', '#2ecc71'
+                ]);
+            }
+        }
+
+        let currentAnimationTimestamp = null;
+
+        // Clear all filters and selections
+        function clearAll() {
+            const slider = document.getElementById('time-slider');
+            const timeDisplay = document.getElementById('current-time');
+
+            // Stop animation if playing
+            if (isPlaying) {
+                isPlaying = false;
+                document.getElementById('play-btn').textContent = '▶ Play';
+                document.getElementById('play-btn').classList.remove('playing');
+                if (animationFrame) cancelAnimationFrame(animationFrame);
+            }
+
+            // Reset slider
+            slider.value = allTimestamps.length;
+            timeDisplay.textContent = 'All times';
+
+            // Clear bar chart selection
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.classList.remove('selected', 'dimmed');
             });
+            document.getElementById('selected-date-label').textContent = '';
+
+            // Clear map filters
+            clearTimeFilter();
         }
 
         // Clear time filter
         function clearTimeFilter() {
+            currentAnimationTimestamp = null;
+            currentTimeFilter = null;
+
+            // Reset colors back to normal (remove flash highlighting)
+            if (map.getLayer('buildings-layer')) {
+                map.setPaintProperty('buildings-layer', 'fill-color', '#ff6b6b');
+            }
+            if (map.getLayer('buildings-circles-layer')) {
+                map.setPaintProperty('buildings-circles-layer', 'circle-color', '#ff6b6b');
+                map.setPaintProperty('buildings-circles-layer', 'circle-radius', [
+                    'interpolate', ['linear'], ['zoom'],
+                    7, 0.5, 8, 0.6, 9, 0.8, 10, 1, 11, 1.25, 12, 1.5, 13, 2
+                ]);
+            }
+            if (map.getLayer('highways-layer')) {
+                map.setPaintProperty('highways-layer', 'line-color', '#3498db');
+            }
+            if (map.getLayer('waterways-layer')) {
+                map.setPaintProperty('waterways-layer', 'line-color', '#2ecc71');
+            }
+
             updateMapFilter();
         }
 
@@ -537,27 +729,42 @@
                 isPlaying = false;
                 document.getElementById('play-btn').textContent = '▶ Play';
                 document.getElementById('play-btn').classList.remove('playing');
-                timeDisplay.textContent = 'All dates';
+                timeDisplay.textContent = 'All times';
                 clearTimeFilter();
                 return;
             }
 
             slider.value = idx + 1;
-            const date = allTimestamps[idx];
-            timeDisplay.textContent = `Up to ${date}`;
-            filterUpToDate(date);
+            const ts = allTimestamps[idx];
+            timeDisplay.textContent = formatTimestamp(ts);
+            filterUpToTimestamp(ts);
 
-            // Highlight current bar
-            document.querySelectorAll('.bar').forEach((bar, i) => {
+            // Highlight the corresponding hour's bar in the chart
+            document.querySelectorAll('.bar').forEach(bar => {
                 bar.classList.remove('selected', 'dimmed');
-                if (i < idx) bar.classList.remove('dimmed');
-                else if (i === idx) bar.classList.add('selected');
-                else bar.classList.add('dimmed');
+                const barHour = bar.dataset.hour;
+                if (barHour === ts) {
+                    bar.classList.add('selected');
+                } else if (barHour > ts) {
+                    bar.classList.add('dimmed');
+                }
             });
 
-            setTimeout(() => {
+            // Wait for map to finish rendering before next frame to prevent artifacts
+            const scheduleNext = () => {
+                if (!isPlaying) return;
                 animationFrame = requestAnimationFrame(animateTimeline);
-            }, 800);
+            };
+
+            // Use idle event if map is still rendering, otherwise schedule with delay
+            // Speed: 25ms normal, 10ms after idle (4x faster than original)
+            if (map.isStyleLoaded() && !map.isMoving()) {
+                setTimeout(scheduleNext, 25);
+            } else {
+                map.once('idle', () => {
+                    setTimeout(scheduleNext, 10);
+                });
+            }
         }
 
         // Load map data when ready
@@ -574,104 +781,183 @@
             document.getElementById('count-waterway').textContent = '3';
         });
 
-        // Load OSM features - try PMTiles, fallback to GeoJSON
+        // Load OSM features - use GeoJSON for circles (all features), PMTiles for polygons (efficient at high zoom)
         async function loadOSMFeatures() {
-            try {
-                // Test if server supports range requests (needed for PMTiles)
-                const testResponse = await fetch(PMTILES_URL, { method: 'HEAD' });
-                const acceptRanges = testResponse.headers.get('Accept-Ranges');
+            // Always load GeoJSON for circles layer (ensures all features visible at low zoom)
+            const geojsonData = await fetch('mozambique_flood_mapping.geojson').then(r => r.json());
 
-                if (acceptRanges === 'bytes') {
-                    // Use PMTiles (more efficient)
-                    console.log('Using PMTiles source');
-                    addPMTilesSource();
-                } else {
-                    throw new Error('Server does not support range requests');
-                }
-            } catch (e) {
-                // Fallback to GeoJSON
-                console.log('Falling back to GeoJSON source:', e.message);
-                addGeoJSONSource();
-            }
-        }
+            // Pre-compute centroids for buildings to use as circle points
+            // This ensures we have simple points that render at ALL zoom levels
+            const buildingCentroids = {
+                type: 'FeatureCollection',
+                features: geojsonData.features
+                    .filter(f => f.properties && f.properties.building)
+                    .map(f => {
+                        // Calculate centroid
+                        let coords;
+                        if (f.geometry.type === 'Point') {
+                            coords = f.geometry.coordinates;
+                        } else if (f.geometry.type === 'Polygon') {
+                            const ring = f.geometry.coordinates[0];
+                            let sumX = 0, sumY = 0;
+                            for (const pt of ring) {
+                                sumX += pt[0];
+                                sumY += pt[1];
+                            }
+                            coords = [sumX / ring.length, sumY / ring.length];
+                        } else if (f.geometry.type === 'LineString') {
+                            const pts = f.geometry.coordinates;
+                            const mid = Math.floor(pts.length / 2);
+                            coords = pts[mid];
+                        } else {
+                            // For other types, try to get first coordinate
+                            coords = f.geometry.coordinates[0];
+                            if (Array.isArray(coords[0])) coords = coords[0];
+                            if (Array.isArray(coords[0])) coords = coords[0];
+                        }
+                        return {
+                            type: 'Feature',
+                            properties: f.properties,
+                            geometry: {
+                                type: 'Point',
+                                coordinates: coords
+                            }
+                        };
+                    })
+            };
 
-        // Add PMTiles source
-        function addPMTilesSource() {
-            map.addSource('osm-features', {
-                type: 'vector',
-                url: 'pmtiles://' + PMTILES_URL
+            console.log(`Created ${buildingCentroids.features.length} building centroids for circle layer`);
+
+            // Source for building circles - simple points, no simplification possible
+            map.addSource('building-centroids', {
+                type: 'geojson',
+                data: buildingCentroids
             });
 
-            addFeatureLayers('osm_features');
-        }
+            // Source for full geometries (polygons, lines)
+            map.addSource('osm-features-geojson', {
+                type: 'geojson',
+                data: geojsonData,
+                tolerance: 0.5 // Reduced simplification
+            });
 
-        // Add GeoJSON source (fallback)
-        function addGeoJSONSource() {
-            fetch('mozambique_flood_mapping.geojson')
-                .then(r => r.json())
-                .then(data => {
-                    map.addSource('osm-features', {
-                        type: 'geojson',
-                        data: data
+            // Try PMTiles for polygon layers (more efficient at high zoom)
+            let usePMTiles = false;
+            try {
+                const testResponse = await fetch(PMTILES_URL, { method: 'HEAD' });
+                const acceptRanges = testResponse.headers.get('Accept-Ranges');
+                if (acceptRanges === 'bytes') {
+                    map.addSource('osm-features-pmtiles', {
+                        type: 'vector',
+                        url: 'pmtiles://' + PMTILES_URL
                     });
+                    usePMTiles = true;
+                    console.log('Using PMTiles for polygon layers, GeoJSON for circles');
+                }
+            } catch (e) {
+                console.log('PMTiles not available, using GeoJSON for all layers:', e.message);
+            }
 
-                    addFeatureLayers(null); // No source-layer for GeoJSON
-                });
+            addFeatureLayers(usePMTiles);
         }
 
         // Add feature layers
-        function addFeatureLayers(sourceLayer) {
-            const sourceLayerProp = sourceLayer ? { 'source-layer': sourceLayer } : {};
+        function addFeatureLayers(usePMTiles) {
+            // For polygon layers: use PMTiles if available (efficient), otherwise GeoJSON
+            const polygonSource = usePMTiles ? 'osm-features-pmtiles' : 'osm-features-geojson';
+            const polygonSourceLayerProp = usePMTiles ? { 'source-layer': 'osm_features' } : {};
 
-            // Buildings layer
+            // For circle layer: always use GeoJSON (ensures ALL features visible at any zoom)
+            const circleSource = 'osm-features-geojson';
+
+            // Buildings layer (polygons) - only visible at zoom 14+
             map.addLayer({
                 id: 'buildings-layer',
                 type: 'fill',
-                source: 'osm-features',
-                ...sourceLayerProp,
+                source: polygonSource,
+                ...polygonSourceLayerProp,
+                minzoom: 14, // Only show actual polygons at high zoom
                 filter: ['has', 'building'],
                 paint: {
-                    'fill-color': '#e74c3c',
-                    'fill-opacity': 0.7,
-                    'fill-outline-color': '#c0392b'
+                    'fill-color': '#ff6b6b',
+                    'fill-opacity': 0.85,
+                    'fill-outline-color': '#c0392b',
+                    'fill-antialias': true
                 }
             });
 
-            // Highways layer
+            // Buildings outline layer - only visible at zoom 14+
+            map.addLayer({
+                id: 'buildings-outline-layer',
+                type: 'line',
+                source: polygonSource,
+                ...polygonSourceLayerProp,
+                minzoom: 14, // Only show outlines at high zoom
+                filter: ['has', 'building'],
+                paint: {
+                    'line-color': '#ff4444',
+                    'line-width': 0.5,
+                    'line-opacity': 0.9
+                }
+            });
+
+            // Highways layer - use GeoJSON for consistency (off by default)
             map.addLayer({
                 id: 'highways-layer',
                 type: 'line',
-                source: 'osm-features',
-                ...sourceLayerProp,
+                source: circleSource,
                 filter: ['has', 'highway'],
                 paint: {
                     'line-color': '#3498db',
                     'line-width': 2,
-                    'line-opacity': 0.8
+                    'line-opacity': 0 // Off by default
                 }
             });
 
-            // Waterways layer
+            // Waterways layer - use GeoJSON for consistency (off by default)
             map.addLayer({
                 id: 'waterways-layer',
                 type: 'line',
-                source: 'osm-features',
-                ...sourceLayerProp,
+                source: circleSource,
                 filter: ['has', 'waterway'],
                 paint: {
                     'line-color': '#2ecc71',
                     'line-width': 3,
-                    'line-opacity': 0.8
+                    'line-opacity': 0 // Off by default
+                }
+            });
+
+            // Buildings circle layer - uses pre-computed centroids (simple points)
+            // This guarantees ALL 49,808 buildings visible at ANY zoom level
+            map.addLayer({
+                id: 'buildings-circles-layer',
+                type: 'circle',
+                source: 'building-centroids', // Use centroid points, not polygons
+                maxzoom: 14, // Hide at zoom 14+ where polygons take over
+                paint: {
+                    'circle-color': '#ff6b6b',
+                    'circle-radius': [
+                        'interpolate', ['linear'], ['zoom'],
+                        7, 0.5,
+                        8, 0.6,
+                        9, 0.8,
+                        10, 1,
+                        11, 1.25,
+                        12, 1.5,
+                        13, 2
+                    ],
+                    'circle-opacity': 0.9
                 }
             });
 
             // Click handlers for popups
             map.on('click', 'buildings-layer', (e) => showPopup(e));
+            map.on('click', 'buildings-circles-layer', (e) => showPopup(e));
             map.on('click', 'highways-layer', (e) => showPopup(e));
             map.on('click', 'waterways-layer', (e) => showPopup(e));
 
             // Cursor changes
-            ['buildings-layer', 'highways-layer', 'waterways-layer'].forEach(layer => {
+            ['buildings-layer', 'buildings-circles-layer', 'highways-layer', 'waterways-layer'].forEach(layer => {
                 map.on('mouseenter', layer, () => map.getCanvas().style.cursor = 'pointer');
                 map.on('mouseleave', layer, () => map.getCanvas().style.cursor = '');
             });
@@ -722,7 +1008,7 @@
                         source: 'hot-projects',
                         paint: {
                             'fill-color': '#f39c12',
-                            'fill-opacity': 0.1
+                            'fill-opacity': 0.03
                         }
                     });
 
