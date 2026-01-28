@@ -45,21 +45,9 @@
         }
         .layer-toggle:hover { background: #252550; }
         .layer-toggle.inactive { opacity: 0.4; }
-
-        /* Zoom button */
-        .zoom-btn {
-            width: 100%;
-            padding: 10px;
-            background: #4ecca3;
-            color: #1a1a2e;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85em;
-            margin-bottom: 10px;
-        }
-        .zoom-btn:hover { background: #6ee6bb; }
+        .layer-toggle .color-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; }
+        .layer-toggle .layer-name { flex: 1; font-size: 0.9em; }
+        .layer-toggle .layer-count { color: #666; font-size: 0.85em; }
 
         /* Download links */
         .download-link {
@@ -73,12 +61,9 @@
             font-size: 0.85em;
         }
         .download-link:hover { background: #252550; }
-        .layer-toggle .color-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; }
-        .layer-toggle .layer-name { flex: 1; font-size: 0.9em; }
-        .layer-toggle .layer-count { color: #666; font-size: 0.85em; }
 
         /* Main Content */
-        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
 
         /* Timeline */
         #timeline {
@@ -145,7 +130,7 @@
         .x-axis span { text-align: center; }
 
         /* Map */
-        #map { flex: 1; min-height: 0; }
+        #map { flex: 1; min-height: 0; position: relative; }
         #loading {
             position: absolute;
             top: 50%;
@@ -170,6 +155,38 @@
             margin-left: 10px;
         }
         .clear-filter:hover { background: #6ee6bb; }
+
+        /* Custom map controls */
+        .leaflet-control-zoom-extent {
+            background: white;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            border-radius: 4px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        }
+        .leaflet-control-zoom-extent:hover { background: #f4f4f4; }
+
+        /* AI Disclaimer */
+        .ai-disclaimer {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(22, 33, 62, 0.9);
+            color: #888;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+        .ai-disclaimer a { color: #4ecca3; text-decoration: none; }
+        .ai-disclaimer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -211,21 +228,13 @@
                 <span class="layer-name">Waterways</span>
                 <span class="layer-count" id="count-waterway">0</span>
             </div>
-            <div class="layer-toggle" data-layer="other">
-                <div class="color-dot" style="background: #9b59b6;"></div>
-                <span class="layer-name">Other</span>
-                <span class="layer-count" id="count-other">0</span>
-            </div>
 
             <div class="section-title">HOT Projects</div>
-            <div class="layer-toggle active" data-layer="hot-projects" id="hot-toggle">
+            <div class="layer-toggle" data-layer="hot-projects" id="hot-toggle">
                 <div class="color-dot" style="background: #f39c12; border: 2px solid #f39c12;"></div>
                 <span class="layer-name">Project Areas</span>
                 <span class="layer-count" id="count-hot">0</span>
             </div>
-
-            <div class="section-title">Map Controls</div>
-            <button class="zoom-btn" id="zoom-extent">Zoom to Full Extent</button>
 
             <div class="section-title">Download Data</div>
             <a href="mozambique_flood_mapping.geojson" download class="download-link">OSM Features (GeoJSON)</a>
@@ -248,6 +257,9 @@
             </div>
             <div id="map">
                 <div id="loading">Loading GeoJSON data...</div>
+                <div class="ai-disclaimer">
+                    Built with AI assistance (Claude) · <a href="https://github.com/cgiovando/osm-moz-jan2026" target="_blank">Source</a>
+                </div>
             </div>
         </div>
     </div>
@@ -260,29 +272,46 @@
             maxZoom: 19
         }).addTo(map);
 
+        // Add custom zoom to extent control
+        const ZoomExtentControl = L.Control.extend({
+            options: { position: 'topleft' },
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-control-zoom-extent leaflet-bar');
+                container.innerHTML = '⌂';
+                container.title = 'Zoom to full extent';
+                L.DomEvent.on(container, 'click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    map.setView([-21.5, 34.0], 7);
+                });
+                return container;
+            }
+        });
+        map.addControl(new ZoomExtentControl());
+
         // State
         let allFeatures = [];
         let featuresByDate = {};
-        let featuresByType = { building: [], highway: [], waterway: [], other: [] };
-        let layerGroups = { building: null, highway: null, waterway: null, other: null };
-        let activeTypes = { building: true, highway: true, waterway: true, other: true };
+        let featuresByType = { building: [], highway: [], waterway: [] };
+        let layerGroups = { building: null, highway: null, waterway: null };
+        let activeTypes = { building: true, highway: true, waterway: true };
         let selectedDate = null;
         let maxEdits = 0;
         let hotProjectsLayer = null;
         let hotProjectsVisible = true;
+        let sortedDates = [];
 
         // Get feature type
         function getType(props) {
             if (props.building) return 'building';
             if (props.highway) return 'highway';
             if (props.waterway) return 'waterway';
-            return 'other';
+            return null; // Ignore other types
         }
 
         // Get color by type
         function getColor(type) {
-            const colors = { building: '#e74c3c', highway: '#3498db', waterway: '#2ecc71', other: '#9b59b6' };
-            return colors[type] || '#9b59b6';
+            const colors = { building: '#e74c3c', highway: '#3498db', waterway: '#2ecc71' };
+            return colors[type] || '#888';
         }
 
         // Create layer for a feature
@@ -333,6 +362,7 @@
             // Filter and add features
             allFeatures.forEach(f => {
                 const type = getType(f.properties);
+                if (!type) return; // Skip if not a known type
                 const date = f.properties.timestamp?.slice(0, 10);
 
                 // Check type filter
@@ -351,6 +381,47 @@
                     layerGroups[type].addTo(map);
                 }
             });
+
+            // Update timeline to reflect active layers
+            updateTimeline();
+        }
+
+        // Update timeline based on active layers
+        function updateTimeline() {
+            // Calculate counts based on active types only
+            const filteredDates = {};
+            const users = new Set();
+            let totalFiltered = 0;
+
+            allFeatures.forEach(f => {
+                const type = getType(f.properties);
+                if (!type || !activeTypes[type]) return;
+
+                const date = f.properties.timestamp?.slice(0, 10);
+                if (date) {
+                    filteredDates[date] = (filteredDates[date] || 0) + 1;
+                }
+                users.add(f.properties.user);
+                totalFiltered++;
+            });
+
+            // Update stats
+            document.getElementById('total-features').textContent = totalFiltered.toLocaleString();
+            document.getElementById('total-contributors').textContent = users.size;
+
+            const filteredMax = Math.max(...Object.values(filteredDates), 1);
+            document.getElementById('peak-day').textContent = filteredMax.toLocaleString();
+
+            // Update bar heights
+            document.querySelectorAll('.bar').forEach(bar => {
+                const date = bar.dataset.date;
+                const count = filteredDates[date] || 0;
+                bar.style.height = `${(count / maxEdits) * 100}%`;
+                bar.title = `${date}: ${count} edits`;
+            });
+
+            // Update Y-axis
+            buildYAxis(filteredMax);
         }
 
         // Update bar chart highlighting
@@ -392,15 +463,17 @@
             yAxis.innerHTML = '';
             gridlines.innerHTML = '';
 
-            // Determine nice intervals
-            const intervals = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
-            const majorIntervals = [100, 200, 300, 400, 500];
+            if (maxVal <= 0) return;
 
-            intervals.forEach(val => {
-                if (val > maxVal) return;
+            // Determine nice intervals based on max value
+            let interval = 50;
+            if (maxVal > 500) interval = 100;
+            if (maxVal > 1000) interval = 200;
+            if (maxVal < 100) interval = 20;
 
+            for (let val = interval; val <= maxVal; val += interval) {
                 const pct = (1 - val / maxVal) * 100;
-                const isMajor = majorIntervals.includes(val);
+                const isMajor = val % (interval * 2) === 0;
 
                 // Label
                 const label = document.createElement('div');
@@ -414,7 +487,7 @@
                 line.className = 'gridline' + (isMajor ? ' major' : '');
                 line.style.top = `${pct}%`;
                 gridlines.appendChild(line);
-            });
+            }
         }
 
         // Load data
@@ -427,9 +500,12 @@
                 // Process features
                 const users = {};
                 const dates = {};
-                const typeCounts = { building: 0, highway: 0, waterway: 0, other: 0 };
+                const typeCounts = { building: 0, highway: 0, waterway: 0 };
 
                 allFeatures.forEach(f => {
+                    const type = getType(f.properties);
+                    if (!type) return; // Skip unknown types
+
                     const user = f.properties.user || 'unknown';
                     users[user] = (users[user] || 0) + 1;
 
@@ -441,22 +517,22 @@
                         featuresByDate[date].push(f);
                     }
 
-                    const type = getType(f.properties);
                     typeCounts[type]++;
                     featuresByType[type].push(f);
                 });
 
                 // Update stats
-                document.getElementById('total-features').textContent = allFeatures.length.toLocaleString();
+                document.getElementById('total-features').textContent = Object.values(typeCounts).reduce((a,b) => a+b, 0).toLocaleString();
                 document.getElementById('total-contributors').textContent = Object.keys(users).length;
 
-                const sortedDates = Object.entries(dates).sort((a, b) => a[0].localeCompare(b[0]));
+                sortedDates = Object.entries(dates).sort((a, b) => a[0].localeCompare(b[0]));
                 maxEdits = Math.max(...Object.values(dates));
                 document.getElementById('peak-day').textContent = maxEdits.toLocaleString();
 
                 // Update layer counts
                 Object.keys(typeCounts).forEach(type => {
-                    document.getElementById(`count-${type}`).textContent = typeCounts[type].toLocaleString();
+                    const el = document.getElementById(`count-${type}`);
+                    if (el) el.textContent = typeCounts[type].toLocaleString();
                 });
 
                 // Date range
@@ -513,7 +589,7 @@
                 }
 
                 // Layer toggle handlers
-                document.querySelectorAll('.layer-toggle').forEach(toggle => {
+                document.querySelectorAll('.layer-toggle[data-layer]:not([data-layer="hot-projects"])').forEach(toggle => {
                     toggle.addEventListener('click', () => {
                         const type = toggle.dataset.layer;
                         activeTypes[type] = !activeTypes[type];
@@ -577,12 +653,6 @@
             } else if (hotProjectsLayer) {
                 map.removeLayer(hotProjectsLayer);
             }
-        });
-
-        // Zoom to full extent
-        const initialView = { center: [-21.5, 34.0], zoom: 7 };
-        document.getElementById('zoom-extent')?.addEventListener('click', () => {
-            map.setView(initialView.center, initialView.zoom);
         });
     </script>
 </body>
