@@ -173,17 +173,12 @@
 
         /* AI Disclaimer */
         .ai-disclaimer {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(22, 33, 62, 0.9);
-            color: #888;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.7em;
-            z-index: 1000;
-            white-space: nowrap;
+            margin-top: auto;
+            padding-top: 15px;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid #2a2a4a;
         }
         .ai-disclaimer a { color: #4ecca3; text-decoration: none; }
         .ai-disclaimer a:hover { text-decoration: underline; }
@@ -240,6 +235,10 @@
             <a href="mozambique_flood_mapping.geojson" download class="download-link">OSM Features (GeoJSON)</a>
             <a href="hot_projects.geojson" download class="download-link">HOT Projects (GeoJSON)</a>
             <a href="mozambique_mapping_stats.json" download class="download-link">Statistics (JSON)</a>
+
+            <div class="ai-disclaimer">
+                Built with AI assistance (Claude) · <a href="https://github.com/cgiovando/osm-moz-jan2026" target="_blank">Source</a>
+            </div>
         </div>
 
         <div class="main-content">
@@ -257,9 +256,6 @@
             </div>
             <div id="map">
                 <div id="loading">Loading GeoJSON data...</div>
-                <div class="ai-disclaimer">
-                    Built with AI assistance (Claude) · <a href="https://github.com/cgiovando/osm-moz-jan2026" target="_blank">Source</a>
-                </div>
             </div>
         </div>
     </div>
@@ -281,7 +277,9 @@
                 container.title = 'Zoom to full extent';
                 L.DomEvent.on(container, 'click', function(e) {
                     L.DomEvent.stopPropagation(e);
-                    map.setView([-24.95, 33.5], 10);
+                    if (hotProjectsLayer && hotProjectsLayer.getBounds().isValid()) {
+                        map.fitBounds(hotProjectsLayer.getBounds(), { padding: [20, 20] });
+                    }
                 });
                 return container;
             }
@@ -644,6 +642,11 @@
 
                     if (hotProjectsVisible) {
                         hotProjectsLayer.addTo(map);
+                    }
+
+                    // Fit map to HOT project bounds on initial load
+                    if (hotProjectsLayer.getBounds().isValid()) {
+                        map.fitBounds(hotProjectsLayer.getBounds(), { padding: [20, 20] });
                     }
                 })
                 .catch(err => console.log('HOT projects not loaded:', err));
