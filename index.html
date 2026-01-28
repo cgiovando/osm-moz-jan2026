@@ -465,21 +465,26 @@
 
             if (maxVal <= 0) return;
 
-            // Determine nice intervals based on max value
-            let interval = 50;
-            if (maxVal > 500) interval = 100;
-            if (maxVal > 1000) interval = 200;
-            if (maxVal < 100) interval = 20;
+            // Determine nice intervals based on max value (aim for ~5 gridlines)
+            const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
+            const normalized = maxVal / magnitude;
+            let interval;
+            if (normalized <= 2) interval = magnitude / 5;
+            else if (normalized <= 5) interval = magnitude / 2;
+            else interval = magnitude;
+
+            // Ensure we don't have too many lines
+            while (maxVal / interval > 8) interval *= 2;
 
             for (let val = interval; val <= maxVal; val += interval) {
                 const pct = (1 - val / maxVal) * 100;
-                const isMajor = val % (interval * 2) === 0;
+                const isMajor = val % (interval * 2) === 0 || interval >= 5000;
 
-                // Label
+                // Label (format large numbers as 5k, 10k, etc.)
                 const label = document.createElement('div');
                 label.className = 'y-label';
                 label.style.top = `${pct}%`;
-                label.textContent = val;
+                label.textContent = val >= 1000 ? (val / 1000) + 'k' : val;
                 yAxis.appendChild(label);
 
                 // Gridline
