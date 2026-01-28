@@ -1234,52 +1234,15 @@
             document.getElementById('count-waterway').textContent = '3';
         });
 
-        // Load OSM features - use GeoJSON for circles (all features), PMTiles for polygons (efficient at high zoom)
+        // Load OSM features - use pre-computed centroids for circles, GeoJSON/PMTiles for polygons
         async function loadOSMFeatures() {
-            // Always load GeoJSON for circles layer (ensures all features visible at low zoom)
-            const geojsonData = await fetch('mozambique_flood_mapping.geojson').then(r => r.json());
+            // Load data files in parallel for faster startup
+            const [geojsonData, buildingCentroids] = await Promise.all([
+                fetch('mozambique_flood_mapping.geojson').then(r => r.json()),
+                fetch('building_centroids.geojson').then(r => r.json())
+            ]);
 
-            // Pre-compute centroids for buildings to use as circle points
-            // This ensures we have simple points that render at ALL zoom levels
-            const buildingCentroids = {
-                type: 'FeatureCollection',
-                features: geojsonData.features
-                    .filter(f => f.properties && f.properties.building)
-                    .map(f => {
-                        // Calculate centroid
-                        let coords;
-                        if (f.geometry.type === 'Point') {
-                            coords = f.geometry.coordinates;
-                        } else if (f.geometry.type === 'Polygon') {
-                            const ring = f.geometry.coordinates[0];
-                            let sumX = 0, sumY = 0;
-                            for (const pt of ring) {
-                                sumX += pt[0];
-                                sumY += pt[1];
-                            }
-                            coords = [sumX / ring.length, sumY / ring.length];
-                        } else if (f.geometry.type === 'LineString') {
-                            const pts = f.geometry.coordinates;
-                            const mid = Math.floor(pts.length / 2);
-                            coords = pts[mid];
-                        } else {
-                            // For other types, try to get first coordinate
-                            coords = f.geometry.coordinates[0];
-                            if (Array.isArray(coords[0])) coords = coords[0];
-                            if (Array.isArray(coords[0])) coords = coords[0];
-                        }
-                        return {
-                            type: 'Feature',
-                            properties: f.properties,
-                            geometry: {
-                                type: 'Point',
-                                coordinates: coords
-                            }
-                        };
-                    })
-            };
-
-            console.log(`Created ${buildingCentroids.features.length} building centroids for circle layer`);
+            console.log(`Loaded ${buildingCentroids.features.length} pre-computed building centroids`);
 
             // Compute hourly stats by feature type for dynamic timeline
             // Also extract top contributors from user field
