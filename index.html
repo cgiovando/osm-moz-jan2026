@@ -289,8 +289,8 @@
             position: absolute;
             bottom: 30px;
             right: 10px;
-            width: 150px;
-            height: 120px;
+            width: 180px;
+            height: 150px;
             background: #16213e;
             border: 2px solid #4ecca3;
             border-radius: 6px;
@@ -298,12 +298,6 @@
             overflow: hidden;
         }
         .overview-map canvas { border-radius: 4px; }
-        .overview-extent {
-            position: absolute;
-            border: 2px solid #f39c12;
-            background: rgba(243, 156, 18, 0.2);
-            pointer-events: none;
-        }
     </style>
 </head>
 <body>
@@ -487,8 +481,8 @@
                     source: 'overview-base'
                 }]
             },
-            center: [35, -19],  // Center of Mozambique
-            zoom: 3.5,  // More zoomed out to show more of Mozambique
+            center: [34, -24.5],  // Southern Mozambique where the flood area is
+            zoom: 4.5,  // Balanced zoom to show context and extent box
             interactive: false,
             attributionControl: false
         });

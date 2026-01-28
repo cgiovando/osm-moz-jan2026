@@ -21,8 +21,12 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 - **Hourly Timeline**: Detailed bar chart showing mapping activity by hour with day separators
 - **Animated Playback**: Watch the mapping effort unfold over time with new features flashing yellow as they appear
+- **Dynamic Stats Overlay**: Live counter showing features mapped, with date/time display during animation
+- **Top Contributors**: Expandable list showing top 20 OSM mappers and their contribution counts
 - **Zoom-Adaptive Buildings**: Buildings shown as dots at low zoom, detailed polygons at high zoom - visible at all zoom levels
 - **Layer Toggles**: Show/hide buildings, highways, waterways, and HOT project boundaries
+- **Basemap Switcher**: Choose between CARTO Dark, CARTO Light, OSM Humanitarian, or ESRI Satellite
+- **Overview Map**: Mini locator map showing current viewport location within Mozambique
 - **HOT Project Boundaries**: Overlay of Humanitarian OpenStreetMap Team Tasking Manager projects
 - **Data Downloads**: Download GeoJSON, PMTiles, and JSON data directly from the interface
 - **URL Hash**: Shareable URLs with zoom/lat/lng parameters
