@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mozambique Flood Mapping - Coordinated OSM Response</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #1a1a2e; color: white; }
+
+        .container { display: flex; height: 100vh; }
+
+        /* Side Panel */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: #16213e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar h1 { margin: 0 0 5px 0; font-size: 1.3em; color: #4ecca3; }
+        .sidebar .subtitle { color: #888; font-size: 0.85em; margin-bottom: 20px; line-height: 1.4; }
+
+        .stat-card { background: #1a1a2e; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .stat-value { font-size: 1.8em; font-weight: bold; color: #4ecca3; }
+        .stat-value.date-value { font-size: 1em; }
+        .stat-label { color: #888; font-size: 0.8em; margin-top: 2px; }
+
+        .section-title { font-size: 0.75em; text-transform: uppercase; color: #666; margin: 20px 0 10px 0; letter-spacing: 1px; }
+
+        /* Layer Toggles */
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .layer-toggle:hover { background: #252550; }
+        .layer-toggle.inactive { opacity: 0.4; }
+
+        /* Zoom button */
+        .zoom-btn {
+            width: 100%;
+            padding: 10px;
+            background: #4ecca3;
+            color: #1a1a2e;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+        .zoom-btn:hover { background: #6ee6bb; }
+
+        /* Download links */
+        .download-link {
+            display: block;
+            padding: 8px 10px;
+            margin-bottom: 5px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            color: #4ecca3;
+            text-decoration: none;
+            font-size: 0.85em;
+        }
+        .download-link:hover { background: #252550; }
+        .layer-toggle .color-dot { width: 14px; height: 14px; border-radius: 50%; margin-right: 10px; }
+        .layer-toggle .layer-name { flex: 1; font-size: 0.9em; }
+        .layer-toggle .layer-count { color: #666; font-size: 0.85em; }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        /* Timeline */
+        #timeline {
+            height: 170px;
+            min-height: 170px;
+            background: #16213e;
+            padding: 15px 20px 15px 50px;
+            position: relative;
+        }
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .timeline-title { font-size: 0.85em; font-weight: 600; }
+        .timeline-hint { font-size: 0.75em; color: #666; }
+        .selected-date { color: #4ecca3; font-weight: bold; }
+
+        .chart-container { position: relative; height: 100px; }
+
+        /* Y-axis */
+        .y-axis { position: absolute; left: -45px; top: 0; bottom: 0; width: 40px; }
+        .y-label { position: absolute; right: 5px; font-size: 9px; color: #555; transform: translateY(-50%); }
+
+        /* Gridlines */
+        .gridlines { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; }
+        .gridline { position: absolute; left: 0; right: 0; border-top: 1px solid #2a2a4a; }
+        .gridline.major { border-top-color: #3a3a5a; }
+
+        .bar-chart { display: flex; align-items: flex-end; height: 100%; gap: 2px; width: 100%; position: relative; z-index: 1; }
+        .bar {
+            background: linear-gradient(to top, #4ecca3, #45b39d);
+            flex: 1;
+            min-width: 0;
+            border-radius: 2px 2px 0 0;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .bar:hover { background: linear-gradient(to top, #6ee6bb, #5fd3ad); transform: scaleX(1.1); }
+        .bar.selected { background: linear-gradient(to top, #fff, #ddd); }
+        .bar.dimmed { opacity: 0.3; }
+        .bar-label {
+            font-size: 11px;
+            color: #888;
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            display: none;
+        }
+        .bar:hover .bar-label { display: block; color: #fff; font-weight: 600; }
+
+        /* X-axis labels */
+        .x-axis {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0 0 0;
+            font-size: 11px;
+            color: #888;
+        }
+        .x-axis span { text-align: center; }
+
+        /* Map */
+        #map { flex: 1; min-height: 0; }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+
+        /* Clear filter button */
+        .clear-filter {
+            background: #4ecca3;
+            color: #1a1a2e;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .clear-filter:hover { background: #6ee6bb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>Mozambique Flood Response</h1>
+            <p class="subtitle">Coordinated OSM mapping in flood-affected areas (Gaza, Sofala, Zambezia provinces) - January 2026</p>
+
+            <div class="stat-card">
+                <div class="stat-value" id="total-features">-</div>
+                <div class="stat-label">Features Mapped</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-contributors">-</div>
+                <div class="stat-label">Contributors</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="peak-day">-</div>
+                <div class="stat-label">Peak Day Edits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value date-value" id="date-range">-</div>
+                <div class="stat-label">Date Range</div>
+            </div>
+
+            <div class="section-title">Feature Layers</div>
+            <div class="layer-toggle" data-layer="building">
+                <div class="color-dot" style="background: #e74c3c;"></div>
+                <span class="layer-name">Buildings</span>
+                <span class="layer-count" id="count-building">0</span>
+            </div>
+            <div class="layer-toggle" data-layer="highway">
+                <div class="color-dot" style="background: #3498db;"></div>
+                <span class="layer-name">Highways</span>
+                <span class="layer-count" id="count-highway">0</span>
+            </div>
+            <div class="layer-toggle" data-layer="waterway">
+                <div class="color-dot" style="background: #2ecc71;"></div>
+                <span class="layer-name">Waterways</span>
+                <span class="layer-count" id="count-waterway">0</span>
+            </div>
+            <div class="layer-toggle" data-layer="other">
+                <div class="color-dot" style="background: #9b59b6;"></div>
+                <span class="layer-name">Other</span>
+                <span class="layer-count" id="count-other">0</span>
+            </div>
+
+            <div class="section-title">HOT Projects</div>
+            <div class="layer-toggle active" data-layer="hot-projects" id="hot-toggle">
+                <div class="color-dot" style="background: #f39c12; border: 2px solid #f39c12;"></div>
+                <span class="layer-name">Project Areas</span>
+                <span class="layer-count" id="count-hot">0</span>
+            </div>
+
+            <div class="section-title">Map Controls</div>
+            <button class="zoom-btn" id="zoom-extent">Zoom to Full Extent</button>
+
+            <div class="section-title">Download Data</div>
+            <a href="mozambique_flood_mapping.geojson" download class="download-link">OSM Features (GeoJSON)</a>
+            <a href="hot_projects.geojson" download class="download-link">HOT Projects (GeoJSON)</a>
+            <a href="mozambique_mapping_stats.json" download class="download-link">Statistics (JSON)</a>
+        </div>
+
+        <div class="main-content">
+            <div id="timeline">
+                <div class="timeline-header">
+                    <span class="timeline-title">Edits Over Time</span>
+                    <span class="timeline-hint">Click a bar to filter by date <span class="selected-date" id="selected-date-label"></span></span>
+                </div>
+                <div class="chart-container">
+                    <div class="y-axis" id="y-axis"></div>
+                    <div class="gridlines" id="gridlines"></div>
+                    <div class="bar-chart" id="bar-chart"></div>
+                </div>
+                <div class="x-axis" id="x-axis"></div>
+            </div>
+            <div id="map">
+                <div id="loading">Loading GeoJSON data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize map
+        const map = L.map('map').setView([-21.5, 34.0], 7);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            maxZoom: 19
+        }).addTo(map);
+
+        // State
+        let allFeatures = [];
+        let featuresByDate = {};
+        let featuresByType = { building: [], highway: [], waterway: [], other: [] };
+        let layerGroups = { building: null, highway: null, waterway: null, other: null };
+        let activeTypes = { building: true, highway: true, waterway: true, other: true };
+        let selectedDate = null;
+        let maxEdits = 0;
+        let hotProjectsLayer = null;
+        let hotProjectsVisible = true;
+
+        // Get feature type
+        function getType(props) {
+            if (props.building) return 'building';
+            if (props.highway) return 'highway';
+            if (props.waterway) return 'waterway';
+            return 'other';
+        }
+
+        // Get color by type
+        function getColor(type) {
+            const colors = { building: '#e74c3c', highway: '#3498db', waterway: '#2ecc71', other: '#9b59b6' };
+            return colors[type] || '#9b59b6';
+        }
+
+        // Create layer for a feature
+        function createLayer(feature) {
+            const type = getType(feature.properties);
+            const color = getColor(type);
+            const p = feature.properties;
+
+            const style = {
+                color: color,
+                weight: 2,
+                opacity: 0.8,
+                fillOpacity: 0.5,
+                fillColor: color
+            };
+
+            let layer;
+            if (feature.geometry.type === 'Point') {
+                layer = L.circleMarker(
+                    [feature.geometry.coordinates[1], feature.geometry.coordinates[0]],
+                    { ...style, radius: 6 }
+                );
+            } else {
+                layer = L.geoJSON(feature, { style });
+            }
+
+            const ts = new Date(p.timestamp).toLocaleString();
+            layer.bindPopup(`
+                <strong>OSM ${p.osm_type} #${p.osm_id}</strong><br>
+                <strong>Timestamp:</strong> ${ts}<br>
+                <strong>Contributor:</strong> ${p.user}<br>
+                <strong>Changeset:</strong> <a href="https://www.openstreetmap.org/changeset/${p.changeset}" target="_blank">${p.changeset}</a>
+            `);
+
+            return layer;
+        }
+
+        // Update map based on filters
+        function updateMap() {
+            // Remove all layers
+            Object.values(layerGroups).forEach(lg => { if (lg) map.removeLayer(lg); });
+
+            // Create new layer groups
+            Object.keys(layerGroups).forEach(type => {
+                layerGroups[type] = L.layerGroup();
+            });
+
+            // Filter and add features
+            allFeatures.forEach(f => {
+                const type = getType(f.properties);
+                const date = f.properties.timestamp?.slice(0, 10);
+
+                // Check type filter
+                if (!activeTypes[type]) return;
+
+                // Check date filter
+                if (selectedDate && date !== selectedDate) return;
+
+                const layer = createLayer(f);
+                layerGroups[type].addLayer(layer);
+            });
+
+            // Add active layer groups to map
+            Object.keys(layerGroups).forEach(type => {
+                if (activeTypes[type]) {
+                    layerGroups[type].addTo(map);
+                }
+            });
+        }
+
+        // Update bar chart highlighting
+        function updateBarHighlight() {
+            document.querySelectorAll('.bar').forEach(bar => {
+                if (selectedDate) {
+                    if (bar.dataset.date === selectedDate) {
+                        bar.classList.add('selected');
+                        bar.classList.remove('dimmed');
+                    } else {
+                        bar.classList.remove('selected');
+                        bar.classList.add('dimmed');
+                    }
+                } else {
+                    bar.classList.remove('selected', 'dimmed');
+                }
+            });
+
+            const label = document.getElementById('selected-date-label');
+            if (selectedDate) {
+                const d = new Date(selectedDate);
+                label.innerHTML = `- ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} <button class="clear-filter" onclick="clearDateFilter()">Clear</button>`;
+            } else {
+                label.textContent = '';
+            }
+        }
+
+        // Clear date filter
+        window.clearDateFilter = function() {
+            selectedDate = null;
+            updateBarHighlight();
+            updateMap();
+        };
+
+        // Build Y-axis and gridlines
+        function buildYAxis(maxVal) {
+            const yAxis = document.getElementById('y-axis');
+            const gridlines = document.getElementById('gridlines');
+            yAxis.innerHTML = '';
+            gridlines.innerHTML = '';
+
+            // Determine nice intervals
+            const intervals = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
+            const majorIntervals = [100, 200, 300, 400, 500];
+
+            intervals.forEach(val => {
+                if (val > maxVal) return;
+
+                const pct = (1 - val / maxVal) * 100;
+                const isMajor = majorIntervals.includes(val);
+
+                // Label
+                const label = document.createElement('div');
+                label.className = 'y-label';
+                label.style.top = `${pct}%`;
+                label.textContent = val;
+                yAxis.appendChild(label);
+
+                // Gridline
+                const line = document.createElement('div');
+                line.className = 'gridline' + (isMajor ? ' major' : '');
+                line.style.top = `${pct}%`;
+                gridlines.appendChild(line);
+            });
+        }
+
+        // Load data
+        fetch('mozambique_flood_mapping.geojson')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                allFeatures = data.features;
+
+                // Process features
+                const users = {};
+                const dates = {};
+                const typeCounts = { building: 0, highway: 0, waterway: 0, other: 0 };
+
+                allFeatures.forEach(f => {
+                    const user = f.properties.user || 'unknown';
+                    users[user] = (users[user] || 0) + 1;
+
+                    const ts = f.properties.timestamp;
+                    const date = ts?.slice(0, 10);
+                    if (date) {
+                        dates[date] = (dates[date] || 0) + 1;
+                        if (!featuresByDate[date]) featuresByDate[date] = [];
+                        featuresByDate[date].push(f);
+                    }
+
+                    const type = getType(f.properties);
+                    typeCounts[type]++;
+                    featuresByType[type].push(f);
+                });
+
+                // Update stats
+                document.getElementById('total-features').textContent = allFeatures.length.toLocaleString();
+                document.getElementById('total-contributors').textContent = Object.keys(users).length;
+
+                const sortedDates = Object.entries(dates).sort((a, b) => a[0].localeCompare(b[0]));
+                maxEdits = Math.max(...Object.values(dates));
+                document.getElementById('peak-day').textContent = maxEdits.toLocaleString();
+
+                // Update layer counts
+                Object.keys(typeCounts).forEach(type => {
+                    document.getElementById(`count-${type}`).textContent = typeCounts[type].toLocaleString();
+                });
+
+                // Date range
+                if (sortedDates.length > 0) {
+                    const formatDate = (dateStr) => {
+                        const d = new Date(dateStr);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    };
+                    document.getElementById('date-range').textContent =
+                        `${formatDate(sortedDates[0][0])} to ${formatDate(sortedDates[sortedDates.length-1][0])}`;
+                }
+
+                // Build Y-axis
+                buildYAxis(maxEdits);
+
+                // Build bar chart
+                const chart = document.getElementById('bar-chart');
+                sortedDates.forEach(([date, count]) => {
+                    const bar = document.createElement('div');
+                    bar.className = 'bar';
+                    bar.style.height = `${(count / maxEdits) * 100}%`;
+                    bar.title = `${date}: ${count} edits`;
+                    bar.dataset.date = date;
+
+                    bar.addEventListener('click', () => {
+                        if (selectedDate === date) {
+                            selectedDate = null;
+                        } else {
+                            selectedDate = date;
+                        }
+                        updateBarHighlight();
+                        updateMap();
+                    });
+
+                    const label = document.createElement('div');
+                    label.className = 'bar-label';
+                    label.textContent = date.slice(5);
+                    bar.appendChild(label);
+
+                    chart.appendChild(bar);
+                });
+
+                // Build x-axis with a few evenly spaced labels
+                const xAxis = document.getElementById('x-axis');
+                const numLabels = 5;
+                const step = Math.floor(sortedDates.length / (numLabels - 1));
+                for (let i = 0; i < numLabels; i++) {
+                    const idx = Math.min(i * step, sortedDates.length - 1);
+                    const date = sortedDates[idx][0];
+                    const d = new Date(date);
+                    const label = document.createElement('span');
+                    label.textContent = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    xAxis.appendChild(label);
+                }
+
+                // Layer toggle handlers
+                document.querySelectorAll('.layer-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', () => {
+                        const type = toggle.dataset.layer;
+                        activeTypes[type] = !activeTypes[type];
+                        toggle.classList.toggle('inactive', !activeTypes[type]);
+                        updateMap();
+                    });
+                });
+
+                // Initial map render
+                updateMap();
+
+                // Load HOT project boundaries
+                loadHotProjects();
+            })
+            .catch(err => {
+                document.getElementById('loading').textContent = 'Error: ' + err.message;
+            });
+
+        // Load HOT Tasking Manager project boundaries
+        function loadHotProjects() {
+            fetch('hot_projects.geojson')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('count-hot').textContent = data.features.length;
+
+                    hotProjectsLayer = L.geoJSON(data, {
+                        style: {
+                            color: '#f39c12',
+                            weight: 3,
+                            opacity: 0.9,
+                            fillOpacity: 0.1,
+                            fillColor: '#f39c12',
+                            dashArray: '5, 5'
+                        },
+                        onEachFeature: (feature, layer) => {
+                            const p = feature.properties;
+                            layer.bindPopup(`
+                                <strong>${p.name}</strong><br>
+                                <strong>Project:</strong> <a href="${p.url}" target="_blank">#${p.projectId}</a><br>
+                                <strong>Priority:</strong> ${p.priority}<br>
+                                <strong>Progress:</strong> ${p.percentMapped}% mapped, ${p.percentValidated}% validated<br>
+                                <strong>Contributors:</strong> ${p.totalContributors}<br>
+                                <em>${p.description?.substring(0, 150)}...</em>
+                            `);
+                        }
+                    });
+
+                    if (hotProjectsVisible) {
+                        hotProjectsLayer.addTo(map);
+                    }
+                })
+                .catch(err => console.log('HOT projects not loaded:', err));
+        }
+
+        // HOT projects toggle
+        document.querySelector('[data-layer="hot-projects"]')?.addEventListener('click', function() {
+            hotProjectsVisible = !hotProjectsVisible;
+            this.classList.toggle('inactive', !hotProjectsVisible);
+            if (hotProjectsVisible && hotProjectsLayer) {
+                hotProjectsLayer.addTo(map);
+            } else if (hotProjectsLayer) {
+                map.removeLayer(hotProjectsLayer);
+            }
+        });
+
+        // Zoom to full extent
+        const initialView = { center: [-21.5, 34.0], zoom: 7 };
+        document.getElementById('zoom-extent')?.addEventListener('click', () => {
+            map.setView(initialView.center, initialView.zoom);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+# Mozambique Flood Response - OSM Mapping Visualization
+
+Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January 2026 Mozambique floods.
+
+## Live Demo
+
+**[View the interactive map](https://giovand.github.io/osm-moz-jan2026/)**
+
+## Overview
+
+In January 2026, severe flooding affected over 600,000 people in Mozambique, with Gaza, Sofala, and Maputo provinces hit hardest. This visualization shows the rapid coordinated mapping response by the OpenStreetMap community.
+
+### Key Statistics
+
+- **1,541** features mapped
+- **26** contributors
+- **410** peak day edits (January 26, 2026)
+- Date range: December 28, 2025 to January 27, 2026
+
+## Features
+
+- **Interactive Timeline**: Click on any day to filter features mapped on that date
+- **Layer Toggles**: Show/hide buildings, highways, waterways, and HOT project boundaries
+- **HOT Project Boundaries**: Overlay of Humanitarian OpenStreetMap Team Tasking Manager projects
+- **Data Downloads**: Download GeoJSON and JSON data directly from the interface
+
+## Data Sources
+
+- **OSM Features**: Extracted via [Overpass API](https://overpass-api.de/) with contribution metadata (timestamps, users, changesets)
+- **HOT Projects**: Fetched from [HOT Tasking Manager API](https://tasks.hotosm.org/)
+
+### Included HOT Projects
+
+| Project | Name | Priority | Progress |
+|---------|------|----------|----------|
+| [#39738](https://tasks.hotosm.org/projects/39738) | Mozambique Floods, Chicumbane | URGENT | 96% mapped |
+| [#18375](https://tasks.hotosm.org/projects/18375) | Mapping for Mozambique: Buzi 1 | HIGH | 0% mapped |
+| [#18385](https://tasks.hotosm.org/projects/18385) | Mapping for Mozambique: Buzi 7 | HIGH | 0% mapped |
+
+## Files
+
+| File | Description |
+|------|-------------|
+| `index.html` | Interactive web visualization |
+| `mozambique_flood_mapping.geojson` | OSM features with timestamps and contributor info |
+| `hot_projects.geojson` | HOT Tasking Manager project boundaries |
+| `mozambique_mapping_stats.json` | Aggregated mapping statistics |
+| `extract_mozambique_osm.py` | Python script to extract OSM data |
+| `fetch_hot_projects.py` | Python script to fetch HOT project boundaries |
+
+## References
+
+- [UN OCHA Flash Update - Mozambique Floods](https://reliefweb.int/report/mozambique/flash-update-no5-heavy-rains-and-floods-central-and-southern-mozambique-26-january-2026)
+- [HOT Tasking Manager - Mozambique Projects](https://tasks.hotosm.org/explore?text=mozambique)
+- [OpenStreetMap](https://www.openstreetmap.org/)
+
+## License
+
+Data: [ODbL](https://opendatacommons.org/licenses/odbl/) (OpenStreetMap data)
+Code: MIT
