@@ -12,10 +12,10 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **52,249** features mapped
-- **250** contributors
-- **13,295** peak day edits (January 25, 2026)
-- Date range: December 29, 2025 to January 28, 2026
+- **50,836** features mapped
+- **228** contributors
+- **13,052** peak day edits (January 25, 2026)
+- Date range: January 23-28, 2026 (flood response period)
 
 ## Features
 
@@ -33,9 +33,7 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 | Project | Name | Priority | Progress |
 |---------|------|----------|----------|
-| [#39738](https://tasks.hotosm.org/projects/39738) | Mozambique Floods, Chicumbane | URGENT | 96% mapped |
-| [#18375](https://tasks.hotosm.org/projects/18375) | Mapping for Mozambique: Buzi 1 | HIGH | 0% mapped |
-| [#18385](https://tasks.hotosm.org/projects/18385) | Mapping for Mozambique: Buzi 7 | HIGH | 0% mapped |
+| [#39738](https://tasks.hotosm.org/projects/39738) | Mozambique Floods, Chicumbane | URGENT | 99% mapped |
 
 ## Files
 

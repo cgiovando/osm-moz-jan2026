@@ -21,24 +21,31 @@ FLOOD_AREAS = {
     "maputo_incomati": (-26.0, 32.0, -25.0, 33.0),   # Maputo Province - Incomati/Umbeluzi
 }
 
-# Combined bounding box for main affected area (Gaza/Sofala focus)
-# Extended south to -25.5 to include Chicumbane (HOT project 39738)
+# Focused bounding box for Chicumbane flood response area (HOT project 39738)
+# Project bounds: lat -25.07 to -24.84, lon 33.43 to 33.56
+# Expanded slightly to capture surrounding mapping activity
+CHICUMBANE_BBOX = (-25.2, 33.3, -24.7, 33.7)
+
+# Combined bounding box for broader area (if needed)
 MAIN_BBOX = (-25.5, 32.0, -19.0, 36.0)
 
-def query_osm_with_metadata(bbox, days_back=30, feature_types=None):
+def query_osm_with_metadata(bbox, start_date=None, feature_types=None):
     """
     Query OSM data with full metadata including timestamps, users, and versions.
 
     Args:
         bbox: (south, west, north, east) bounding box
-        days_back: Number of days to look back for recent edits
+        start_date: Start date for edits (YYYY-MM-DD format), defaults to 7 days ago
         feature_types: List of feature types to query (default: buildings, highways, waterways)
     """
     if feature_types is None:
         feature_types = ["building", "highway", "waterway", "landuse", "amenity"]
 
     south, west, north, east = bbox
-    date_filter = (datetime.utcnow() - timedelta(days=days_back)).strftime("%Y-%m-%dT00:00:00Z")
+    if start_date:
+        date_filter = f"{start_date}T00:00:00Z"
+    else:
+        date_filter = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00Z")
 
     # Build Overpass query with metadata
     # Using 'meta' to get timestamp, version, changeset, user info
@@ -56,7 +63,7 @@ def query_osm_with_metadata(bbox, days_back=30, feature_types=None):
 out meta geom;
 """
 
-    print(f"Querying Overpass API for data modified in last {days_back} days...")
+    print(f"Querying Overpass API for data modified since {date_filter}...")
     print(f"Bounding box: {bbox}")
 
     response = requests.post(OVERPASS_URL, data={"data": query}, timeout=600)
@@ -195,22 +202,18 @@ def main():
     print("Extracting recent mapping contributions with timestamps")
     print("=" * 60)
 
-    # Extract data from main flood-affected area
-    # Using 30 days to capture recent rapid mapping response
+    # Extract data from Chicumbane flood response area (HOT project 39738)
+    # Starting from Jan 21, 2026 when HOT project was created
+    # (flood response mapping surge began Jan 23)
     try:
         osm_data = query_osm_with_metadata(
-            MAIN_BBOX,
-            days_back=30,
+            CHICUMBANE_BBOX,
+            start_date="2026-01-21",
             feature_types=["building", "highway", "waterway"]
         )
     except requests.exceptions.RequestException as e:
         print(f"Error querying Overpass API: {e}")
-        print("\nTrying smaller area (Gaza Province only)...")
-        osm_data = query_osm_with_metadata(
-            FLOOD_AREAS["gaza_limpopo"],
-            days_back=30,
-            feature_types=["building", "highway"]
-        )
+        return
 
     print(f"\nReceived {len(osm_data.get('elements', []))} elements from OSM")
 

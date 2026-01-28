@@ -8,11 +8,9 @@ import json
 
 HOT_API = "https://tasking-manager-tm4-production-api.hotosm.org/api/v2"
 
-# Key flood-related projects
+# Key flood-related projects (January 2026 response)
 FLOOD_PROJECTS = [
-    39738,  # Mozambique Floods, Chicumbane (URGENT - current)
-    18375,  # Mapping for Mozambique: Buzi 1 (HIGH)
-    18385,  # Mapping for Mozambique: Buzi 7 (HIGH)
+    39738,  # Mozambique Floods, Chicumbane (URGENT - current response)
 ]
 
 def fetch_project(project_id):
