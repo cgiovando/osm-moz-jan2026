@@ -19,10 +19,19 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ## Features
 
-- **Interactive Timeline**: Click on any day to filter features mapped on that date
+- **Hourly Timeline**: Detailed bar chart showing mapping activity by hour with day separators
+- **Animated Playback**: Watch the mapping effort unfold over time with new features flashing yellow as they appear
+- **Zoom-Adaptive Buildings**: Buildings shown as dots at low zoom, detailed polygons at high zoom - visible at all zoom levels
 - **Layer Toggles**: Show/hide buildings, highways, waterways, and HOT project boundaries
 - **HOT Project Boundaries**: Overlay of Humanitarian OpenStreetMap Team Tasking Manager projects
-- **Data Downloads**: Download GeoJSON and JSON data directly from the interface
+- **Data Downloads**: Download GeoJSON, PMTiles, and JSON data directly from the interface
+- **URL Hash**: Shareable URLs with zoom/lat/lng parameters
+
+## Technology
+
+- **[MapLibre GL JS](https://maplibre.org/)**: Open-source map rendering
+- **[PMTiles](https://github.com/protomaps/PMTiles)**: Efficient single-file tile archive format
+- **[CARTO Dark Basemap](https://carto.com/basemaps/)**: Background map tiles
 
 ## Data Sources
 
@@ -39,10 +48,11 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 | File | Description |
 |------|-------------|
-| `index.html` | Interactive web visualization |
+| `index.html` | Interactive web visualization (MapLibre GL JS) |
 | `mozambique_flood_mapping.geojson` | OSM features with timestamps and contributor info |
+| `mozambique_flood_mapping.pmtiles` | OSM features as PMTiles for efficient tile serving |
 | `hot_projects.geojson` | HOT Tasking Manager project boundaries |
-| `mozambique_mapping_stats.json` | Aggregated mapping statistics |
+| `mozambique_mapping_stats.json` | Aggregated mapping statistics (hourly and daily) |
 | `extract_mozambique_osm.py` | Python script to extract OSM data |
 | `fetch_hot_projects.py` | Python script to fetch HOT project boundaries |
 
