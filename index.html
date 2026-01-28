@@ -182,25 +182,149 @@
             font-size: 0.85em;
         }
         .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #16213e; }
+
+        /* Expandable contributors section */
+        .contributors-section {
+            background: #1a1a2e;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .contributors-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .contributors-header:hover { background: #2a2a4a; }
+        .contributors-header .stat-value { font-size: 1.8em; font-weight: bold; color: #4ecca3; }
+        .contributors-header .stat-label { font-size: 0.8em; color: #888; }
+        .contributors-toggle { color: #4ecca3; font-size: 1.2em; transition: transform 0.3s; }
+        .contributors-section.expanded .contributors-toggle { transform: rotate(180deg); }
+        .contributors-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .contributors-section.expanded .contributors-list { max-height: 400px; overflow-y: auto; }
+        .contributor-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            border-top: 1px solid #2a2a4a;
+            font-size: 0.85em;
+        }
+        .contributor-rank { color: #666; width: 25px; }
+        .contributor-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .contributor-count { color: #4ecca3; font-weight: 600; margin-left: 10px; }
+
+        /* Basemap switcher */
+        .basemap-control {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #16213e;
+            border-radius: 6px;
+            padding: 8px;
+            z-index: 1000;
+        }
+        .basemap-control select {
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #2a2a4a;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+        .basemap-control select:focus { outline: none; border-color: #4ecca3; }
+
+        /* Dynamic stats overlay */
+        .stats-overlay {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            background: rgba(22, 33, 62, 0.9);
+            border-radius: 8px;
+            padding: 12px 16px;
+            z-index: 1000;
+            min-width: 220px;
+        }
+        .stats-overlay-date {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #4ecca3;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #2a2a4a;
+        }
+        .stats-overlay-row {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+        .stats-overlay-row:last-child { margin-bottom: 0; }
+        .stats-overlay-count {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4ecca3;
+            margin-right: 8px;
+        }
+        .stats-overlay-label {
+            font-size: 1em;
+            color: #ccc;
+        }
+        .stats-overlay-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        /* Overview map */
+        .overview-map {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            width: 150px;
+            height: 120px;
+            background: #16213e;
+            border: 2px solid #4ecca3;
+            border-radius: 6px;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .overview-map canvas { border-radius: 4px; }
+        .overview-extent {
+            position: absolute;
+            border: 2px solid #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
             <h1>Mozambique Flood Response</h1>
-            <p class="subtitle">Coordinated OSM mapping in flood-affected areas (Gaza, Sofala, Zambezia provinces) - January 2026</p>
+            <p class="subtitle">Coordinated OSM mapping in flood-affected areas in Mozambique - January 2026</p>
 
             <div class="stat-card">
                 <div class="stat-value" id="total-features">-</div>
                 <div class="stat-label">Features Mapped</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="total-contributors">-</div>
-                <div class="stat-label">Contributors</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="peak-edits">-</div>
-                <div class="stat-label">Peak Day Edits</div>
+            <div class="contributors-section" id="contributors-section">
+                <div class="contributors-header" id="contributors-header">
+                    <div>
+                        <div class="stat-value" id="total-contributors">-</div>
+                        <div class="stat-label">Contributors</div>
+                    </div>
+                    <span class="contributors-toggle">▼</span>
+                </div>
+                <div class="contributors-list" id="contributors-list"></div>
             </div>
 
             <div class="section-title">Feature Layers</div>
@@ -259,6 +383,19 @@
             </div>
             <div id="map">
                 <div id="loading">Loading map data...</div>
+                <div class="stats-overlay" id="stats-overlay">
+                    <div class="stats-overlay-date" id="stats-overlay-date"></div>
+                    <div id="stats-overlay-content"></div>
+                </div>
+                <div class="basemap-control">
+                    <select id="basemap-select">
+                        <option value="carto-dark">CARTO Dark</option>
+                        <option value="carto-light">CARTO Light</option>
+                        <option value="osm-humanitarian">OSM Humanitarian</option>
+                        <option value="esri-satellite">ESRI Satellite</option>
+                    </select>
+                </div>
+                <div class="overview-map" id="overview-map"></div>
             </div>
         </div>
     </div>
@@ -304,6 +441,146 @@
         // Add navigation controls
         map.addControl(new maplibregl.NavigationControl(), 'top-left');
 
+        // Basemap options
+        const basemaps = {
+            'carto-dark': {
+                tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+                attribution: '© OpenStreetMap contributors © CARTO'
+            },
+            'carto-light': {
+                tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png'],
+                attribution: '© OpenStreetMap contributors © CARTO'
+            },
+            'osm-humanitarian': {
+                tiles: ['https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'],
+                attribution: '© OpenStreetMap contributors, Humanitarian OpenStreetMap Team'
+            },
+            'esri-satellite': {
+                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                attribution: '© Esri, Maxar, Earthstar Geographics'
+            }
+        };
+
+        // Basemap switcher
+        document.getElementById('basemap-select').addEventListener('change', (e) => {
+            const basemap = basemaps[e.target.value];
+            if (basemap && map.getSource('carto-dark')) {
+                map.getSource('carto-dark').setTiles(basemap.tiles);
+            }
+        });
+
+        // Overview map (minimap showing Mozambique context)
+        const overviewMap = new maplibregl.Map({
+            container: 'overview-map',
+            style: {
+                version: 8,
+                sources: {
+                    'overview-base': {
+                        type: 'raster',
+                        tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],
+                        tileSize: 256
+                    }
+                },
+                layers: [{
+                    id: 'overview-base',
+                    type: 'raster',
+                    source: 'overview-base'
+                }]
+            },
+            center: [35, -19],  // Center of Mozambique
+            zoom: 3.5,  // More zoomed out to show more of Mozambique
+            interactive: false,
+            attributionControl: false
+        });
+
+        // Track if overview map is ready
+        let overviewMapReady = false;
+
+        // Add extent box to overview map
+        overviewMap.on('load', () => {
+            // Add a box showing current main map extent
+            overviewMap.addSource('extent-box', {
+                type: 'geojson',
+                data: {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[[0,0],[0,0],[0,0],[0,0],[0,0]]]
+                    }
+                }
+            });
+
+            overviewMap.addLayer({
+                id: 'extent-box-fill',
+                type: 'fill',
+                source: 'extent-box',
+                paint: {
+                    'fill-color': '#e74c3c',
+                    'fill-opacity': 0.35
+                }
+            });
+
+            overviewMap.addLayer({
+                id: 'extent-box-line',
+                type: 'line',
+                source: 'extent-box',
+                paint: {
+                    'line-color': '#e74c3c',
+                    'line-width': 3
+                }
+            });
+
+            overviewMapReady = true;
+            console.log('Overview map ready');
+            updateOverviewExtent();
+        });
+
+        function updateOverviewExtent() {
+            if (!overviewMapReady) return;
+
+            try {
+                const bounds = map.getBounds();
+                if (!bounds) return;
+
+                const w = bounds.getWest();
+                const s = bounds.getSouth();
+                const e = bounds.getEast();
+                const n = bounds.getNorth();
+
+                const geojson = {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [[
+                            [w, s],
+                            [e, s],
+                            [e, n],
+                            [w, n],
+                            [w, s]
+                        ]]
+                    }
+                };
+
+                const source = overviewMap.getSource('extent-box');
+                if (source) {
+                    source.setData(geojson);
+                }
+            } catch (err) {
+                console.log('Overview extent update error:', err);
+            }
+        }
+
+        // Update on main map move
+        map.on('moveend', updateOverviewExtent);
+        map.on('zoomend', updateOverviewExtent);
+        map.on('load', () => {
+            updateOverviewExtent();
+            // Also update periodically to catch any missed updates
+            setInterval(updateOverviewExtent, 1000);
+        });
+
         // State
         let stats = null;
         let hotProjectsBounds = null;
@@ -314,7 +591,11 @@
         let isPlaying = false;
         let animationFrame = null;
 
+        // Stats by feature type (computed from GeoJSON)
+        let statsByType = { building: {}, highway: {}, waterway: {} };
+
         // Load stats
+        let topContributors = [];
         fetch('mozambique_mapping_stats.json')
             .then(r => r.json())
             .then(data => {
@@ -322,8 +603,8 @@
                 document.getElementById('total-features').textContent = data.total_features.toLocaleString();
                 document.getElementById('total-contributors').textContent = data.unique_contributors.toLocaleString();
 
-                const peakDay = data.edits_by_date.reduce((max, d) => d[1] > max[1] ? d : max, ['', 0]);
-                document.getElementById('peak-edits').textContent = peakDay[1].toLocaleString();
+                // Store top contributors (will be populated from GeoJSON if not in stats)
+                topContributors = data.top_contributors || [];
 
                 // Build timeline with hourly bars (more detailed view)
                 const hourlyData = data.edits_by_hour || data.edits_by_date;
@@ -333,8 +614,146 @@
                 setupTimeSlider(hourlyData);
             });
 
+        // Function to populate contributors list (called after GeoJSON loads)
+        function populateContributorsList() {
+            const list = document.getElementById('contributors-list');
+            if (topContributors.length > 0) {
+                list.innerHTML = topContributors.map(([name, count], i) => `
+                    <div class="contributor-row">
+                        <span class="contributor-rank">${i + 1}.</span>
+                        <span class="contributor-name">${name}</span>
+                        <span class="contributor-count">${count.toLocaleString()}</span>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = '<div class="contributor-row"><span class="contributor-name">Loading...</span></div>';
+            }
+        }
+
+        // Contributors expandable section toggle
+        document.getElementById('contributors-header').addEventListener('click', () => {
+            document.getElementById('contributors-section').classList.toggle('expanded');
+        });
+
         // Clear button handler
         document.getElementById('clear-btn').addEventListener('click', clearAll);
+
+        // Feature type colors and labels
+        const featureTypeConfig = {
+            building: { color: '#e74c3c', label: 'Buildings' },
+            highway: { color: '#3498db', label: 'Highways' },
+            waterway: { color: '#2ecc71', label: 'Waterways' }
+        };
+
+        // Helper to format date
+        function formatDateDisplay(dateStr) {
+            const [y, m, d] = dateStr.split('-');
+            const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
+            return `${monthName} ${parseInt(d)}, ${y}`;
+        }
+
+        // Update the dynamic stats overlay on the map
+        function updateStatsOverlay(timestamp) {
+            const content = document.getElementById('stats-overlay-content');
+            const dateDisplay = document.getElementById('stats-overlay-date');
+
+            // Calculate counts for each active layer
+            const counts = {};
+            let hasFilter = false;
+
+            Object.keys(activeTypes).forEach(type => {
+                if (!activeTypes[type]) return;
+
+                let count = 0;
+                if (timestamp) {
+                    // Count features up to this timestamp
+                    hasFilter = true;
+                    Object.entries(statsByType[type]).forEach(([ts, c]) => {
+                        if (ts <= timestamp) count += c;
+                    });
+                } else if (currentTimeFilter) {
+                    // Count features for selected date
+                    hasFilter = true;
+                    Object.entries(statsByType[type]).forEach(([ts, c]) => {
+                        if (ts.startsWith(currentTimeFilter)) count += c;
+                    });
+                } else {
+                    // Count all features
+                    Object.values(statsByType[type]).forEach(c => count += c);
+                }
+                counts[type] = count;
+            });
+
+            // Build overlay HTML for feature counts
+            let html = '';
+            Object.keys(counts).forEach(type => {
+                const config = featureTypeConfig[type];
+                html += `
+                    <div class="stats-overlay-row">
+                        <span class="stats-overlay-dot" style="background: ${config.color};"></span>
+                        <span class="stats-overlay-count">${counts[type].toLocaleString()}</span>
+                        <span class="stats-overlay-label">${config.label}${hasFilter ? ' mapped' : ''}</span>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html || '<div class="stats-overlay-row"><span class="stats-overlay-label">No layers selected</span></div>';
+
+            // Update date display based on filter state
+            if (timestamp) {
+                // Animation running - show date + hour
+                const date = timestamp.slice(0, 10);
+                const hour = timestamp.slice(11, 13);
+                const [y, m, d] = date.split('-');
+                const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1];
+                dateDisplay.textContent = `${monthName} ${parseInt(d)}, ${y} - ${hour}:00`;
+            } else if (currentTimeFilter) {
+                // Day manually selected - show that date
+                dateDisplay.textContent = formatDateDisplay(currentTimeFilter);
+            } else {
+                // No filter - show date range from stats
+                if (stats && stats.edits_by_date && stats.edits_by_date.length > 0) {
+                    const firstDate = stats.edits_by_date[0][0];
+                    const lastDate = stats.edits_by_date[stats.edits_by_date.length - 1][0];
+                    const [y1, m1, d1] = firstDate.split('-');
+                    const [y2, m2, d2] = lastDate.split('-');
+                    const month1 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m1)-1];
+                    const month2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m2)-1];
+                    dateDisplay.textContent = `${month1} ${parseInt(d1)} - ${month2} ${parseInt(d2)}, ${y2}`;
+                } else {
+                    dateDisplay.textContent = 'All dates';
+                }
+            }
+        }
+
+        // Update timeline based on currently active layers
+        function updateTimelineForLayers() {
+            // Combine stats from active layers
+            const combinedStats = {};
+
+            // Get all unique timestamps from all types
+            const allTs = new Set([
+                ...Object.keys(statsByType.building),
+                ...Object.keys(statsByType.highway),
+                ...Object.keys(statsByType.waterway)
+            ]);
+
+            allTs.forEach(ts => {
+                let count = 0;
+                if (activeTypes.building) count += statsByType.building[ts] || 0;
+                if (activeTypes.highway) count += statsByType.highway[ts] || 0;
+                if (activeTypes.waterway) count += statsByType.waterway[ts] || 0;
+                if (count > 0) combinedStats[ts] = count;
+            });
+
+            // Convert to sorted array
+            const hourlyData = Object.entries(combinedStats).sort((a, b) => a[0].localeCompare(b[0]));
+
+            if (hourlyData.length > 0) {
+                buildTimeline(hourlyData, null);
+                setupTimeSlider(hourlyData);
+            }
+        }
 
         // Build timeline with hourly bars and day markers
         function buildTimeline(editsByHour, editsByDate) {
@@ -434,6 +853,41 @@
 
         // Select date (highlights all hourly bars for that date)
         function selectDate(date) {
+            // Stop animation if playing
+            if (isPlaying) {
+                isPlaying = false;
+                document.getElementById('play-btn').textContent = '▶ Play';
+                document.getElementById('play-btn').classList.remove('playing');
+                if (animationFrame) cancelAnimationFrame(animationFrame);
+            }
+
+            // Clear animation timestamp so date filter takes effect
+            currentAnimationTimestamp = null;
+
+            // Reset slider to end position
+            const slider = document.getElementById('time-slider');
+            slider.value = allTimestamps.length;
+            document.getElementById('current-time').textContent = 'All times';
+
+            // Reset flash colors back to normal
+            if (map.getLayer('buildings-layer')) {
+                map.setPaintProperty('buildings-layer', 'fill-color', '#ff6b6b');
+            }
+            if (map.getLayer('buildings-circles-layer')) {
+                map.setPaintProperty('buildings-circles-layer', 'circle-color', '#ff6b6b');
+                map.setPaintProperty('buildings-circles-layer', 'circle-radius', [
+                    'interpolate', ['linear'], ['zoom'],
+                    7, 0.5, 8, 0.6, 9, 0.8, 10, 1, 11, 1.25, 12, 1.5, 13, 2
+                ]);
+            }
+            if (map.getLayer('highways-layer')) {
+                map.setPaintProperty('highways-layer', 'line-color', '#3498db');
+            }
+            if (map.getLayer('waterways-layer')) {
+                map.setPaintProperty('waterways-layer', 'line-color', '#2ecc71');
+            }
+
+            // Update bar highlights
             document.querySelectorAll('.bar').forEach(bar => {
                 bar.classList.remove('selected', 'dimmed');
                 if (date && bar.dataset.date !== date) bar.classList.add('dimmed');
@@ -454,6 +908,7 @@
         function filterByDate(date) {
             currentTimeFilter = date;
             updateMapFilter();
+            updateStatsOverlay(null);
         }
 
         // Clear date filter
@@ -636,6 +1091,9 @@
                     'case', isNewFeature, '#ffff00', '#2ecc71'
                 ]);
             }
+
+            // Update stats overlay
+            updateStatsOverlay(ts);
         }
 
         let currentAnimationTimestamp = null;
@@ -691,6 +1149,7 @@
             }
 
             updateMapFilter();
+            updateStatsOverlay(null);
         }
 
         // Toggle animation
@@ -827,6 +1286,48 @@
             };
 
             console.log(`Created ${buildingCentroids.features.length} building centroids for circle layer`);
+
+            // Compute hourly stats by feature type for dynamic timeline
+            // Also extract top contributors from user field
+            statsByType = { building: {}, highway: {}, waterway: {} };
+            const userCounts = {};
+            geojsonData.features.forEach(f => {
+                const props = f.properties;
+                const ts = props.timestamp ? props.timestamp.slice(0, 13) : null; // YYYY-MM-DDTHH
+
+                // Count by user
+                const user = props.user;
+                if (user) {
+                    userCounts[user] = (userCounts[user] || 0) + 1;
+                }
+
+                if (!ts) return;
+
+                if (props.building) {
+                    statsByType.building[ts] = (statsByType.building[ts] || 0) + 1;
+                }
+                if (props.highway) {
+                    statsByType.highway[ts] = (statsByType.highway[ts] || 0) + 1;
+                }
+                if (props.waterway) {
+                    statsByType.waterway[ts] = (statsByType.waterway[ts] || 0) + 1;
+                }
+            });
+
+            // Set top contributors (sorted by count, top 20)
+            topContributors = Object.entries(userCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20);
+            populateContributorsList();
+
+            console.log('Computed stats by feature type for dynamic timeline');
+            console.log(`Found ${topContributors.length} top contributors`);
+
+            // Update timeline with current layer selection
+            updateTimelineForLayers();
+
+            // Initialize stats overlay now that data is loaded
+            updateStatsOverlay(null);
 
             // Source for building circles - simple points, no simplification possible
             map.addSource('building-centroids', {
@@ -1059,6 +1560,11 @@
                     activeTypes[layer] = !activeTypes[layer];
                     this.classList.toggle('inactive', !activeTypes[layer]);
                     updateMapFilter();
+                    // Update timeline and stats overlay to reflect active layers
+                    if (Object.keys(statsByType.building).length > 0) {
+                        updateTimelineForLayers();
+                        updateStatsOverlay(currentAnimationTimestamp);
+                    }
                 }
             });
         });
