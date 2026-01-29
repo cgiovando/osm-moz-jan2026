@@ -12,10 +12,11 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **50,836** features mapped
-- **228** contributors
-- **13,052** peak day edits (January 25, 2026)
-- Date range: January 23-28, 2026 (flood response period)
+- **51,000+** features mapped (and growing)
+- **230+** contributors
+- **13,000+** peak day edits (January 25, 2026)
+- Date range: January 23, 2026 onwards (flood response period)
+- **Data updated daily at 00:00 UTC**
 
 ## Features
 
@@ -42,11 +43,27 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 - **OSM Features**: Extracted via [Overpass API](https://overpass-api.de/) with contribution metadata (timestamps, users, changesets)
 - **HOT Projects**: Fetched from [HOT Tasking Manager API](https://tasks.hotosm.org/)
 
-### Included HOT Projects
+### HOT Projects
 
-| Project | Name | Priority | Progress |
-|---------|------|----------|----------|
-| [#39738](https://tasks.hotosm.org/projects/39738) | Mozambique Floods, Chicumbane | URGENT | 99% mapped |
+HOT Tasking Manager projects are discovered dynamically by searching for Mozambique flood/cyclone/emergency projects created after January 15, 2026. New projects are automatically included in the visualization.
+
+## Automated Updates
+
+This visualization updates automatically every day at **00:00 UTC** via GitHub Actions.
+
+### How it works
+
+1. **Incremental OSM updates**: Only fetches changes since the last update, making updates fast and efficient
+2. **Dynamic HOT project discovery**: Searches for new Mozambique flood-related projects on the HOT Tasking Manager
+3. **Automatic data processing**: Regenerates PMTiles, building centroids, and statistics
+4. **Auto-commit**: Changes are committed and deployed to GitHub Pages
+
+### Manual refresh
+
+To trigger a manual update or force a full data refresh:
+1. Go to [Actions](../../actions) → "Update Map Data"
+2. Click "Run workflow"
+3. Optionally check "Full data refresh" to ignore incremental updates
 
 ## Files
 
@@ -55,10 +72,13 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 | `index.html` | Interactive web visualization (MapLibre GL JS) |
 | `mozambique_flood_mapping.geojson` | OSM features with timestamps and contributor info |
 | `mozambique_flood_mapping.pmtiles` | OSM features as PMTiles for efficient tile serving |
+| `building_centroids.geojson` | Pre-computed building centroids for fast low-zoom rendering |
 | `hot_projects.geojson` | HOT Tasking Manager project boundaries |
 | `mozambique_mapping_stats.json` | Aggregated mapping statistics (hourly and daily) |
-| `extract_mozambique_osm.py` | Python script to extract OSM data |
-| `fetch_hot_projects.py` | Python script to fetch HOT project boundaries |
+| `extract_mozambique_osm.py` | Python script to extract OSM data (supports incremental updates) |
+| `fetch_hot_projects.py` | Python script to dynamically discover HOT project boundaries |
+| `compute_centroids.py` | Python script to generate building centroids |
+| `.github/workflows/update-data.yml` | GitHub Actions workflow for automated daily updates |
 
 ## References
 
