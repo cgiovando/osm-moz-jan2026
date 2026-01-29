@@ -2,15 +2,25 @@
 """
 Extract OSM data from flooded areas in Mozambique with contribution timestamps.
 Outputs GeoJSON for visualization of rapid coordinated mapping efforts.
+
+Supports incremental updates to reduce API load and processing time.
 """
 
 import requests
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 import time
+import sys
+import os
 
 # Overpass API endpoint
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+
+# State file for tracking incremental updates
+STATE_FILE = ".osm_update_state.json"
+
+# Initial flood response date (HOT project 39738 created Jan 21, mapping surge Jan 23)
+FLOOD_START_DATE = "2026-01-21"
 
 # Bounding boxes for flood-affected areas in Mozambique (Jan 2026)
 # Format: (south, west, north, east)
@@ -29,6 +39,81 @@ CHICUMBANE_BBOX = (-25.2, 33.3, -24.7, 33.7)
 # Combined bounding box for broader area (if needed)
 MAIN_BBOX = (-25.5, 32.0, -19.0, 36.0)
 
+def load_state():
+    """Load the last update state from file."""
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            pass
+    return {}
+
+
+def save_state(state):
+    """Save the update state to file."""
+    with open(STATE_FILE, 'w') as f:
+        json.dump(state, f, indent=2)
+
+
+def load_existing_geojson(filepath):
+    """Load existing GeoJSON file if it exists."""
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r') as f:
+                return json.load(f)
+        except (json.JSONDecodeError, IOError):
+            pass
+    return None
+
+
+def merge_geojson(existing, new_features):
+    """
+    Merge new features into existing GeoJSON.
+    Updates existing features (by osm_id + osm_type) and adds new ones.
+    """
+    if not existing:
+        return {
+            "type": "FeatureCollection",
+            "features": new_features,
+            "metadata": {
+                "source": "OpenStreetMap via Overpass API",
+                "extracted": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+                "description": "OSM data from Mozambique flood-affected areas with contribution timestamps"
+            }
+        }
+
+    # Build index of existing features by osm_id + osm_type
+    feature_index = {}
+    for f in existing.get("features", []):
+        key = (f["properties"].get("osm_id"), f["properties"].get("osm_type"))
+        feature_index[key] = f
+
+    # Update or add new features
+    updated = 0
+    added = 0
+    for f in new_features:
+        key = (f["properties"].get("osm_id"), f["properties"].get("osm_type"))
+        if key in feature_index:
+            feature_index[key] = f  # Update existing
+            updated += 1
+        else:
+            feature_index[key] = f  # Add new
+            added += 1
+
+    print(f"  Merged: {updated} updated, {added} new features")
+
+    return {
+        "type": "FeatureCollection",
+        "features": list(feature_index.values()),
+        "metadata": {
+            "source": "OpenStreetMap via Overpass API",
+            "extracted": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "description": "OSM data from Mozambique flood-affected areas with contribution timestamps"
+        }
+    }
+
+
 def query_osm_with_metadata(bbox, start_date=None, feature_types=None):
     """
     Query OSM data with full metadata including timestamps, users, and versions.
@@ -45,7 +130,7 @@ def query_osm_with_metadata(bbox, start_date=None, feature_types=None):
     if start_date:
         date_filter = f"{start_date}T00:00:00Z"
     else:
-        date_filter = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00Z")
+        date_filter = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00Z")
 
     # Build Overpass query with metadata
     # Using 'meta' to get timestamp, version, changeset, user info
@@ -66,10 +151,30 @@ out meta geom;
     print(f"Querying Overpass API for data modified since {date_filter}...")
     print(f"Bounding box: {bbox}")
 
-    response = requests.post(OVERPASS_URL, data={"data": query}, timeout=600)
-    response.raise_for_status()
-
-    return response.json()
+    # Retry logic for API timeouts
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(OVERPASS_URL, data={"data": query}, timeout=600)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.Timeout:
+            if attempt < max_retries - 1:
+                wait_time = 30 * (attempt + 1)
+                print(f"  Timeout, retrying in {wait_time}s (attempt {attempt + 2}/{max_retries})...")
+                time.sleep(wait_time)
+            else:
+                raise
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 429 or response.status_code >= 500:
+                if attempt < max_retries - 1:
+                    wait_time = 60 * (attempt + 1)
+                    print(f"  Server error {response.status_code}, retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    raise
+            else:
+                raise
 
 
 def osm_to_geojson_with_timestamps(osm_data):
@@ -144,7 +249,7 @@ def osm_to_geojson_with_timestamps(osm_data):
         "features": features,
         "metadata": {
             "source": "OpenStreetMap via Overpass API",
-            "extracted": datetime.utcnow().isoformat() + "Z",
+            "extracted": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "description": "OSM data from Mozambique flood-affected areas with contribution timestamps"
         }
     }
@@ -197,18 +302,51 @@ def analyze_contributions(geojson):
 
 
 def main():
+    # Parse command line arguments
+    full_refresh = "--full" in sys.argv
+
     print("=" * 60)
     print("Mozambique Flood Area OSM Data Extractor")
-    print("Extracting recent mapping contributions with timestamps")
+    if full_refresh:
+        print("Mode: FULL REFRESH")
+    else:
+        print("Mode: INCREMENTAL UPDATE")
     print("=" * 60)
 
+    output_file = "mozambique_flood_mapping.geojson"
+
+    # Determine the start date for the query
+    state = load_state()
+    existing_geojson = None
+
+    if full_refresh:
+        # Full refresh: start from flood response date
+        start_date = FLOOD_START_DATE
+        print(f"\nFull refresh from {start_date}")
+    else:
+        # Incremental: check last update time
+        last_update = state.get("last_update")
+        if last_update:
+            # Use last update time, but go back 1 hour to catch any edge cases
+            start_date = last_update[:10]  # Just the date part
+            existing_geojson = load_existing_geojson(output_file)
+            if existing_geojson:
+                print(f"\nIncremental update since {start_date}")
+                print(f"  Existing features: {len(existing_geojson.get('features', []))}")
+            else:
+                # No existing file, do full refresh
+                start_date = FLOOD_START_DATE
+                print(f"\nNo existing data found, doing full refresh from {start_date}")
+        else:
+            # No state file, do full refresh
+            start_date = FLOOD_START_DATE
+            print(f"\nNo previous state found, doing full refresh from {start_date}")
+
     # Extract data from Chicumbane flood response area (HOT project 39738)
-    # Starting from Jan 21, 2026 when HOT project was created
-    # (flood response mapping surge began Jan 23)
     try:
         osm_data = query_osm_with_metadata(
             CHICUMBANE_BBOX,
-            start_date="2026-01-21",
+            start_date=start_date,
             feature_types=["building", "highway", "waterway"]
         )
     except requests.exceptions.RequestException as e:
@@ -218,13 +356,24 @@ def main():
     print(f"\nReceived {len(osm_data.get('elements', []))} elements from OSM")
 
     # Convert to GeoJSON
-    geojson = osm_to_geojson_with_timestamps(osm_data)
+    new_geojson = osm_to_geojson_with_timestamps(osm_data)
+
+    # Merge with existing if incremental
+    if existing_geojson and not full_refresh:
+        geojson = merge_geojson(existing_geojson, new_geojson.get("features", []))
+    else:
+        geojson = new_geojson
 
     # Save GeoJSON
-    output_file = "mozambique_flood_mapping.geojson"
     with open(output_file, "w") as f:
         json.dump(geojson, f, indent=2)
     print(f"\nSaved GeoJSON to: {output_file}")
+
+    # Update state
+    state["last_update"] = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    state["feature_count"] = len(geojson.get("features", []))
+    save_state(state)
+    print(f"Updated state file: {STATE_FILE}")
 
     # Analyze contributions
     stats = analyze_contributions(geojson)
