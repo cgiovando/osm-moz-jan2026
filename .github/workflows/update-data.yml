@@ -1,0 +1,85 @@
+name: Update Map Data
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Allow manual trigger from GitHub UI
+    inputs:
+      full_refresh:
+        description: 'Full data refresh (ignore incremental)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install requests
+
+      - name: Install tippecanoe
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libsqlite3-dev zlib1g-dev
+          git clone https://github.com/felt/tippecanoe.git
+          cd tippecanoe
+          make -j
+          sudo make install
+
+      - name: Fetch HOT Projects
+        run: python fetch_hot_projects.py
+        continue-on-error: true
+
+      - name: Fetch OSM Data
+        run: |
+          if [ "${{ github.event.inputs.full_refresh }}" == "true" ]; then
+            python extract_mozambique_osm.py --full
+          else
+            python extract_mozambique_osm.py
+          fi
+        continue-on-error: true
+
+      - name: Compute Building Centroids
+        run: python compute_centroids.py
+
+      - name: Generate PMTiles
+        run: |
+          tippecanoe \
+            -o mozambique_flood_mapping.pmtiles \
+            -Z7 -z14 \
+            -l osm_features \
+            --drop-densest-as-needed \
+            --extend-zooms-if-still-dropping \
+            --force \
+            mozambique_flood_mapping.geojson
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and Push
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git commit -m "Auto-update data: $(date -u +%Y-%m-%d)"
+          git push

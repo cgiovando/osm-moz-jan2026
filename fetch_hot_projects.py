@@ -33,8 +33,9 @@ FLOOD_KEYWORDS = ["flood", "inundacao", "inundação", "cyclone", "ciclone", "em
 # Project statuses to include
 VALID_STATUSES = ["PUBLISHED", "ACTIVE"]
 
-# Minimum creation date (only include recent projects)
-MIN_CREATION_DATE = "2024-01-01"
+# Minimum creation date (only include projects created after the flood event)
+# January 2026 Mozambique floods started around January 20, 2026
+MIN_CREATION_DATE = "2026-01-15"
 
 
 def search_projects(search_text):
