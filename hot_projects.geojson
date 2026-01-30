@@ -10,7 +10,7 @@
         "priority": "URGENT",
         "created": "2026-01-21T12:52:16.839000Z",
         "percentMapped": 99,
-        "percentValidated": 55,
+        "percentValidated": 66,
         "totalContributors": 0,
         "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
         "url": "https://tasks.hotosm.org/projects/39738"
@@ -141,7 +141,7 @@
   "metadata": {
     "source": "HOT Tasking Manager API",
     "description": "Mozambique flood response project boundaries",
-    "updated": "2026-01-29T00:15:41.697552Z",
+    "updated": "2026-01-30T01:18:23.793850Z",
     "project_count": 1
   }
 }
