@@ -4,13 +4,157 @@
     {
       "type": "Feature",
       "properties": {
+        "projectId": 40266,
+        "name": "Mozambique Floods Chinhacanine ",
+        "status": "PUBLISHED",
+        "priority": "URGENT",
+        "created": "2026-01-29T11:27:26.809000Z",
+        "percentMapped": 46,
+        "percentValidated": 0,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
+        "url": "https://tasks.hotosm.org/projects/40266"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                32.889722,
+                -24.375173
+              ],
+              [
+                32.885036,
+                -24.375498
+              ],
+              [
+                32.882769,
+                -24.381625
+              ],
+              [
+                32.879813,
+                -24.390605
+              ],
+              [
+                32.88208,
+                -24.394468
+              ],
+              [
+                32.885005,
+                -24.399796
+              ],
+              [
+                32.889832,
+                -24.40146
+              ],
+              [
+                32.890709,
+                -24.406988
+              ],
+              [
+                32.894731,
+                -24.410717
+              ],
+              [
+                32.902775,
+                -24.409052
+              ],
+              [
+                32.902579,
+                -24.398784
+              ],
+              [
+                32.896303,
+                -24.399849
+              ],
+              [
+                32.892726,
+                -24.399808
+              ],
+              [
+                32.890599,
+                -24.392257
+              ],
+              [
+                32.89411,
+                -24.391091
+              ],
+              [
+                32.889722,
+                -24.375173
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "projectId": 40233,
+        "name": "Mozambique Floods, Guija 01",
+        "status": "PUBLISHED",
+        "priority": "URGENT",
+        "created": "2026-01-29T10:31:23.295000Z",
+        "percentMapped": 90,
+        "percentValidated": 3,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
+        "url": "https://tasks.hotosm.org/projects/40233"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                32.865096,
+                -24.405934
+              ],
+              [
+                32.874652,
+                -24.418986
+              ],
+              [
+                32.878892,
+                -24.41715
+              ],
+              [
+                32.877605,
+                -24.414604
+              ],
+              [
+                32.876689,
+                -24.4102
+              ],
+              [
+                32.873749,
+                -24.406094
+              ],
+              [
+                32.870387,
+                -24.402557
+              ],
+              [
+                32.865096,
+                -24.405934
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "projectId": 39738,
         "name": "Mozambique Floods, Chicumbane",
         "status": "PUBLISHED",
         "priority": "URGENT",
         "created": "2026-01-21T12:52:16.839000Z",
         "percentMapped": 99,
-        "percentValidated": 66,
+        "percentValidated": 68,
         "totalContributors": 0,
         "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
         "url": "https://tasks.hotosm.org/projects/39738"
@@ -141,7 +285,7 @@
   "metadata": {
     "source": "HOT Tasking Manager API",
     "description": "Mozambique flood response project boundaries",
-    "updated": "2026-01-30T01:18:23.793850Z",
-    "project_count": 1
+    "updated": "2026-01-31T01:16:02.125243Z",
+    "project_count": 3
   }
 }
