@@ -1,10 +1,10 @@
 {
-  "total_features": 51506,
-  "unique_contributors": 237,
+  "total_features": 52460,
+  "unique_contributors": 242,
   "top_contributors": [
     [
       "mjgk",
-      8141
+      8140
     ],
     [
       "chihana",
@@ -12,43 +12,43 @@
     ],
     [
       "JPMiene",
-      2382
+      2380
     ],
     [
       "Dimitrios Spatharis",
-      1859
+      1856
     ],
     [
       "mepng",
-      1790
+      1789
     ],
     [
       "Wurzel3",
-      1392
-    ],
-    [
-      "Norbert Dichter",
-      1051
-    ],
-    [
-      "SomethingEllis",
-      998
-    ],
-    [
-      "Adrian Shobrooke",
-      890
+      1454
     ],
     [
       "EsthersGeo",
-      853
+      1447
+    ],
+    [
+      "Norbert Dichter",
+      1050
+    ],
+    [
+      "SomethingEllis",
+      997
+    ],
+    [
+      "Adrian Shobrooke",
+      889
+    ],
+    [
+      "Kraan46",
+      873
     ],
     [
       "Sally Mlingi",
       836
-    ],
-    [
-      "Kraan46",
-      781
     ],
     [
       "arpprasad07",
@@ -56,7 +56,7 @@
     ],
     [
       "DMcDowall",
-      648
+      644
     ],
     [
       "Metauro",
@@ -64,7 +64,11 @@
     ],
     [
       "melody_Tej",
-      532
+      530
+    ],
+    [
+      "hebolz",
+      512
     ],
     [
       "BB486",
@@ -72,15 +76,11 @@
     ],
     [
       "BR_pebble",
-      477
+      476
     ],
     [
-      "Byenin",
+      "Palolo",
       447
-    ],
-    [
-      "haabee",
-      442
     ]
   ],
   "edits_by_date": [
@@ -90,35 +90,39 @@
     ],
     [
       "2026-01-24",
-      6437
+      6436
     ],
     [
       "2026-01-25",
-      13039
+      13020
     ],
     [
       "2026-01-26",
-      12621
+      12610
     ],
     [
       "2026-01-27",
-      8930
+      8918
     ],
     [
       "2026-01-28",
-      9262
+      9248
     ],
     [
       "2026-01-29",
-      483
+      482
     ],
     [
       "2026-01-30",
       129
+    ],
+    [
+      "2026-01-31",
+      1012
     ]
   ],
   "date_range": {
     "earliest": "2026-01-23",
-    "latest": "2026-01-30"
+    "latest": "2026-01-31"
   }
 }
