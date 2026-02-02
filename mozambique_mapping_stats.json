@@ -1,10 +1,10 @@
 {
-  "total_features": 52460,
-  "unique_contributors": 242,
+  "total_features": 52909,
+  "unique_contributors": 253,
   "top_contributors": [
     [
       "mjgk",
-      8140
+      8137
     ],
     [
       "chihana",
@@ -12,11 +12,11 @@
     ],
     [
       "JPMiene",
-      2380
+      2379
     ],
     [
       "Dimitrios Spatharis",
-      1856
+      1848
     ],
     [
       "mepng",
@@ -28,7 +28,7 @@
     ],
     [
       "EsthersGeo",
-      1447
+      1446
     ],
     [
       "Norbert Dichter",
@@ -39,12 +39,12 @@
       997
     ],
     [
-      "Adrian Shobrooke",
-      889
+      "Kraan46",
+      965
     ],
     [
-      "Kraan46",
-      873
+      "Adrian Shobrooke",
+      887
     ],
     [
       "Sally Mlingi",
@@ -63,24 +63,24 @@
       552
     ],
     [
-      "melody_Tej",
-      530
+      "hebolz",
+      536
     ],
     [
-      "hebolz",
-      512
+      "melody_Tej",
+      530
     ],
     [
       "BB486",
       511
     ],
     [
-      "BR_pebble",
-      476
+      "Palolo",
+      484
     ],
     [
-      "Palolo",
-      447
+      "BR_pebble",
+      476
     ]
   ],
   "edits_by_date": [
@@ -94,19 +94,19 @@
     ],
     [
       "2026-01-25",
-      13020
+      13018
     ],
     [
       "2026-01-26",
-      12610
+      12592
     ],
     [
       "2026-01-27",
-      8918
+      8910
     ],
     [
       "2026-01-28",
-      9248
+      9238
     ],
     [
       "2026-01-29",
@@ -118,11 +118,15 @@
     ],
     [
       "2026-01-31",
-      1012
+      1011
+    ],
+    [
+      "2026-02-01",
+      488
     ]
   ],
   "date_range": {
     "earliest": "2026-01-23",
-    "latest": "2026-01-31"
+    "latest": "2026-02-01"
   }
 }
