@@ -1,86 +1,86 @@
 {
-  "total_features": 68242,
-  "unique_contributors": 349,
+  "total_features": 82814,
+  "unique_contributors": 408,
   "top_contributors": [
     [
       "mjgk",
-      8124
+      8121
+    ],
+    [
+      "EsthersGeo",
+      5545
     ],
     [
       "chihana",
       5240
     ],
     [
-      "EsthersGeo",
-      2790
+      "magneticred",
+      3061
     ],
     [
       "JPMiene",
-      2378
+      2376
+    ],
+    [
+      "Sally Mlingi",
+      2015
     ],
     [
       "Dimitrios Spatharis",
-      1958
+      1922
     ],
     [
       "mepng",
-      1789
+      1788
     ],
     [
       "SomethingEllis",
-      1538
+      1624
     ],
     [
       "Wurzel3",
-      1457
+      1454
     ],
     [
       "Kraan46",
-      1406
+      1437
     ],
     [
       "Bj\u00f6rn Stieler",
       1337
     ],
     [
-      "Sally Mlingi",
-      1196
+      "henkzwols",
+      1315
+    ],
+    [
+      "Turnierteilnehmer",
+      1062
     ],
     [
       "Norbert Dichter",
-      1050
+      1043
     ],
     [
       "Adrian Shobrooke",
-      882
-    ],
-    [
-      "DMcDowall",
-      773
-    ],
-    [
-      "hebolz",
-      736
-    ],
-    [
-      "arpprasad07",
-      715
-    ],
-    [
-      "fondolucy",
-      681
+      1001
     ],
     [
       "juf Carla",
-      658
+      998
     ],
     [
-      "Justinebaekc",
-      568
+      "KingVik",
+      808
     ],
     [
-      "Metauro",
-      522
+      "DMcDowall",
+      769
+    ],
+    [
+      "fondolucy",
+      768
     ]
   ],
   "edits_by_date": [
@@ -90,55 +90,55 @@
     ],
     [
       "2026-01-24",
-      6417
+      6395
     ],
     [
       "2026-01-25",
-      12940
+      12870
     ],
     [
       "2026-01-26",
-      12370
+      12249
     ],
     [
       "2026-01-27",
-      8696
+      8624
     ],
     [
       "2026-01-28",
-      9025
+      8919
     ],
     [
       "2026-01-29",
-      476
+      450
     ],
     [
       "2026-01-30",
-      129
+      4111
     ],
     [
       "2026-01-31",
-      1000
+      5452
     ],
     [
       "2026-02-01",
-      451
+      671
     ],
     [
       "2026-02-02",
-      3231
+      4570
     ],
     [
       "2026-02-03",
-      4344
+      9255
     ],
     [
       "2026-02-04",
-      4092
+      4099
     ],
     [
       "2026-02-05",
-      4466
+      4544
     ]
   ],
   "date_range": {
