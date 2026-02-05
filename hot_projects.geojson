@@ -9,7 +9,7 @@
         "status": "PUBLISHED",
         "priority": "URGENT",
         "created": "2026-02-05T08:53:58.141000Z",
-        "percentMapped": 68,
+        "percentMapped": 67,
         "percentValidated": 12,
         "totalContributors": 0,
         "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces. Around 90 percent of Mozambique\u2019s population lives in adobe homes, which can collapse after just a few days of heavy rain, leaving families exposed and displaced. \n\nHOT is working with [UNICEF](https://www.unicef.org/), [INGD](https://ingd.gov.mz/) (Mozambique Disaster Risk Management Institute) and [OSM Mozambique](https://wiki.openstreetmap.org/wiki/Mozambique) to prioritize a coordinated mapping response. Please contribute to this project to support the response and recovery operations of these organizations. ",
@@ -1148,6 +1148,322 @@
     {
       "type": "Feature",
       "properties": {
+        "projectId": 40299,
+        "name": "Mozambique Floods, Guija 02",
+        "status": "ARCHIVED",
+        "priority": "URGENT",
+        "created": "2026-01-30T09:31:27.770000Z",
+        "percentMapped": 100,
+        "percentValidated": 100,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
+        "url": "https://tasks.hotosm.org/projects/40299"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                33.006964,
+                -24.488789
+              ],
+              [
+                33.009195,
+                -24.495975
+              ],
+              [
+                33.014688,
+                -24.504956
+              ],
+              [
+                33.019237,
+                -24.508393
+              ],
+              [
+                33.020911,
+                -24.509681
+              ],
+              [
+                33.022156,
+                -24.508119
+              ],
+              [
+                33.020868,
+                -24.507514
+              ],
+              [
+                33.021426,
+                -24.507007
+              ],
+              [
+                33.023078,
+                -24.508276
+              ],
+              [
+                33.025203,
+                -24.507807
+              ],
+              [
+                33.026619,
+                -24.507475
+              ],
+              [
+                33.027949,
+                -24.506343
+              ],
+              [
+                33.030009,
+                -24.505406
+              ],
+              [
+                33.033314,
+                -24.504859
+              ],
+              [
+                33.035309,
+                -24.50562
+              ],
+              [
+                33.035803,
+                -24.50441
+              ],
+              [
+                33.050587,
+                -24.509213
+              ],
+              [
+                33.050287,
+                -24.512395
+              ],
+              [
+                33.052862,
+                -24.51345
+              ],
+              [
+                33.056638,
+                -24.509799
+              ],
+              [
+                33.049128,
+                -24.504664
+              ],
+              [
+                33.051038,
+                -24.50277
+              ],
+              [
+                33.043292,
+                -24.498201
+              ],
+              [
+                33.040867,
+                -24.500427
+              ],
+              [
+                33.036597,
+                -24.49945
+              ],
+              [
+                33.034344,
+                -24.498474
+              ],
+              [
+                33.034043,
+                -24.498435
+              ],
+              [
+                33.035953,
+                -24.49658
+              ],
+              [
+                33.034601,
+                -24.494061
+              ],
+              [
+                33.029473,
+                -24.496658
+              ],
+              [
+                33.025782,
+                -24.49287
+              ],
+              [
+                33.023829,
+                -24.490097
+              ],
+              [
+                33.020868,
+                -24.487773
+              ],
+              [
+                33.017478,
+                -24.486543
+              ],
+              [
+                33.014431,
+                -24.485332
+              ],
+              [
+                33.006771,
+                -24.485703
+              ],
+              [
+                33.006964,
+                -24.488789
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "projectId": 40266,
+        "name": "Mozambique Floods Chinhacanine ",
+        "status": "ARCHIVED",
+        "priority": "URGENT",
+        "created": "2026-01-29T11:27:26.809000Z",
+        "percentMapped": 100,
+        "percentValidated": 100,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
+        "url": "https://tasks.hotosm.org/projects/40266"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                32.889722,
+                -24.375173
+              ],
+              [
+                32.885036,
+                -24.375498
+              ],
+              [
+                32.882769,
+                -24.381625
+              ],
+              [
+                32.879813,
+                -24.390605
+              ],
+              [
+                32.88208,
+                -24.394468
+              ],
+              [
+                32.885005,
+                -24.399796
+              ],
+              [
+                32.889832,
+                -24.40146
+              ],
+              [
+                32.890709,
+                -24.406988
+              ],
+              [
+                32.894731,
+                -24.410717
+              ],
+              [
+                32.902775,
+                -24.409052
+              ],
+              [
+                32.902579,
+                -24.398784
+              ],
+              [
+                32.896303,
+                -24.399849
+              ],
+              [
+                32.892726,
+                -24.399808
+              ],
+              [
+                32.890599,
+                -24.392257
+              ],
+              [
+                32.89411,
+                -24.391091
+              ],
+              [
+                32.889722,
+                -24.375173
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "projectId": 40233,
+        "name": "Mozambique Floods, Guija 01",
+        "status": "ARCHIVED",
+        "priority": "URGENT",
+        "created": "2026-01-29T10:31:23.295000Z",
+        "percentMapped": 100,
+        "percentValidated": 100,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces.\n\nOCHA officials highlighted the country\u2019s high vulnerability due to housing conditions, noting that around 90 percent of Mozambique\u2019s population lives in adobe homes. These earth-based structures are highly susceptible to prolonged rainfall and can collapse after just a few days of heavy rain, leaving families exposed and displaced.",
+        "url": "https://tasks.hotosm.org/projects/40233"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                32.865096,
+                -24.405934
+              ],
+              [
+                32.874652,
+                -24.418986
+              ],
+              [
+                32.878892,
+                -24.41715
+              ],
+              [
+                32.877605,
+                -24.414604
+              ],
+              [
+                32.876689,
+                -24.4102
+              ],
+              [
+                32.873749,
+                -24.406094
+              ],
+              [
+                32.870387,
+                -24.402557
+              ],
+              [
+                32.865096,
+                -24.405934
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "projectId": 39738,
         "name": "Mozambique Floods, Chicumbane",
         "status": "PUBLISHED",
@@ -1285,7 +1601,7 @@
   "metadata": {
     "source": "HOT Tasking Manager API",
     "description": "Mozambique flood response project boundaries",
-    "updated": "2026-02-05T21:36:32.441594Z",
-    "project_count": 3
+    "updated": "2026-02-05T22:06:22.591095Z",
+    "project_count": 6
   }
 }

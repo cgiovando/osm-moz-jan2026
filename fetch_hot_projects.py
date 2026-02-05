@@ -30,16 +30,19 @@ SEARCH_TERMS = [
 # Keywords that must appear in project name/description for inclusion
 FLOOD_KEYWORDS = ["flood", "inundacao", "inundação", "cyclone", "ciclone", "emergency", "disaster"]
 
-# Project statuses to include
-VALID_STATUSES = ["PUBLISHED", "ACTIVE", "ARCHIVED"]
+# Project statuses to search for via the API
+# Note: the default search (no status filter) returns PUBLISHED projects;
+# ARCHIVED must be searched explicitly via projectStatuses parameter.
+# ACTIVE is not a valid API filter value (returns 400).
+SEARCH_STATUSES = [None, "ARCHIVED"]  # None = default (PUBLISHED), "ARCHIVED" = explicit
 
 # Minimum creation date (only include projects created after the flood event)
 # January 2026 Mozambique floods started around January 20, 2026
 MIN_CREATION_DATE = "2026-01-15"
 
 
-def search_projects(search_text):
-    """Search for projects matching the search text."""
+def search_projects(search_text, status=None):
+    """Search for projects matching the search text, optionally filtered by status."""
     url = f"{HOT_API}/projects/"
     params = {
         "textSearch": search_text,
@@ -47,6 +50,8 @@ def search_projects(search_text):
         "orderByType": "DESC",
         "page": 1
     }
+    if status:
+        params["projectStatuses"] = status
 
     all_projects = []
 
@@ -146,29 +151,26 @@ def main():
     print("Searching for Mozambique flood-related projects...")
     print("=" * 60)
 
-    # Collect unique project IDs from all search terms
+    # Collect unique project IDs from all search terms and statuses
+    # The TM API only returns projects matching the requested status,
+    # so we must search each status separately to find archived projects
     found_projects = {}
 
-    for term in SEARCH_TERMS:
-        print(f"\nSearching for: '{term}'")
-        projects = search_projects(term)
-        for proj in projects:
-            pid = proj.get("projectId")
-            if pid and pid not in found_projects:
-                found_projects[pid] = proj
+    for status in SEARCH_STATUSES:
+        for term in SEARCH_TERMS:
+            label = status or "default"
+            print(f"\nSearching for: '{term}' (status={label})")
+            projects = search_projects(term, status=status)
+            for proj in projects:
+                pid = proj.get("projectId")
+                if pid and pid not in found_projects:
+                    found_projects[pid] = proj
 
     print(f"\nFound {len(found_projects)} unique projects from search")
 
     # Filter and fetch full details
     features = []
     for pid, proj_summary in found_projects.items():
-        status = proj_summary.get("status", "")
-
-        # Skip if not in valid status
-        if status not in VALID_STATUSES:
-            print(f"  Skipping project {pid}: status={status}")
-            continue
-
         print(f"\nFetching details for project {pid}...")
         try:
             data = fetch_project_details(pid)
