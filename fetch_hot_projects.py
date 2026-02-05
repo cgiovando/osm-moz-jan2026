@@ -31,7 +31,7 @@ SEARCH_TERMS = [
 FLOOD_KEYWORDS = ["flood", "inundacao", "inundação", "cyclone", "ciclone", "emergency", "disaster"]
 
 # Project statuses to include
-VALID_STATUSES = ["PUBLISHED", "ACTIVE"]
+VALID_STATUSES = ["PUBLISHED", "ACTIVE", "ARCHIVED"]
 
 # Minimum creation date (only include projects created after the flood event)
 # January 2026 Mozambique floods started around January 20, 2026

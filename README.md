@@ -1,6 +1,6 @@
 # Mozambique Flood Response - OSM Mapping Visualization
 
-Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January 2026 Mozambique floods.
+Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January-February 2026 Mozambique floods.
 
 ## Live Demo
 
@@ -8,19 +8,20 @@ Interactive visualization of coordinated OpenStreetMap mapping efforts in respon
 
 ## Overview
 
-In January 2026, severe flooding affected over 600,000 people in Mozambique, with Gaza, Sofala, and Maputo provinces hit hardest. This visualization shows the rapid coordinated mapping response by the OpenStreetMap community.
+In January 2026, severe flooding affected over 600,000 people in Mozambique, with Gaza, Sofala, and Maputo provinces hit hardest. This visualization shows the rapid coordinated mapping response by the OpenStreetMap community across multiple HOT Tasking Manager project areas.
 
 ### Key Statistics
 
-- **51,000+** features mapped (and growing)
-- **230+** contributors
+- **68,000+** features mapped (and growing daily)
+- **349+** contributors
+- **3** HOT project areas: Chicumbane, Massingir, Cidade De Xai Xai
 - **13,000+** peak day edits (January 25, 2026)
 - Date range: January 23, 2026 onwards (flood response period)
 - **Data updated daily at 00:00 UTC**
 
 ## Features
 
-- **Hourly Timeline**: Detailed bar chart showing mapping activity by hour with day separators
+- **Scrollable Timeline**: Detailed bar chart showing mapping activity by hour with day separators and horizontal scrolling
 - **Animated Playback**: Watch the mapping effort unfold over time with new features flashing yellow as they appear
 - **Dynamic Stats Overlay**: Live counter showing features mapped, with date/time display during animation
 - **Top Contributors**: Expandable list showing top 20 OSM mappers and their contribution counts
@@ -45,7 +46,7 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### HOT Projects
 
-HOT Tasking Manager projects are discovered dynamically by searching for Mozambique flood/cyclone/emergency projects created after January 15, 2026. New projects are automatically included in the visualization.
+HOT Tasking Manager projects are discovered dynamically by searching for Mozambique flood/cyclone/emergency projects created after January 15, 2026. Active, published, and archived projects are all included. New projects are automatically picked up, and OSM data is extracted from each project's bounding area independently.
 
 ## Automated Updates
 
@@ -53,10 +54,11 @@ This visualization updates automatically every day at **00:00 UTC** via GitHub A
 
 ### How it works
 
-1. **Incremental OSM updates**: Only fetches changes since the last update, making updates fast and efficient
-2. **Dynamic HOT project discovery**: Searches for new Mozambique flood-related projects on the HOT Tasking Manager
-3. **Automatic data processing**: Regenerates PMTiles, building centroids, and statistics
-4. **Auto-commit**: Changes are committed and deployed to GitHub Pages
+1. **Dynamic HOT project discovery**: Searches for new Mozambique flood-related projects on the HOT Tasking Manager (active, published, and archived)
+2. **Multi-area OSM extraction**: Queries each project area independently via Overpass API, with deduplication across overlapping areas
+3. **Incremental updates**: Only fetches changes since the last update, making daily runs fast and efficient
+4. **Automatic data processing**: Regenerates PMTiles, building centroids, and statistics
+5. **Auto-commit**: Changes are committed and deployed to GitHub Pages
 
 ### Manual refresh
 

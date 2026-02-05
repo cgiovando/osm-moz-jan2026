@@ -1285,10 +1285,7 @@
             loadOSMFeatures();
             loadHotProjects();
 
-            // Update counts
-            document.getElementById('count-building').textContent = '49,808';
-            document.getElementById('count-highway').textContent = '1,025';
-            document.getElementById('count-waterway').textContent = '3';
+            // Counts are updated dynamically in loadOSMFeatures()
         });
 
         // Load OSM features - use pre-computed centroids for circles, GeoJSON/PMTiles for polygons
@@ -1327,6 +1324,18 @@
                     statsByType.waterway[ts] = (statsByType.waterway[ts] || 0) + 1;
                 }
             });
+
+            // Update sidebar feature layer counts dynamically
+            const featureCounts = { building: 0, highway: 0, waterway: 0 };
+            geojsonData.features.forEach(f => {
+                const p = f.properties || {};
+                if (p.building) featureCounts.building++;
+                if (p.highway) featureCounts.highway++;
+                if (p.waterway) featureCounts.waterway++;
+            });
+            document.getElementById('count-building').textContent = featureCounts.building.toLocaleString();
+            document.getElementById('count-highway').textContent = featureCounts.highway.toLocaleString();
+            document.getElementById('count-waterway').textContent = featureCounts.waterway.toLocaleString();
 
             // Set top contributors (sorted by count, top 20)
             topContributors = Object.entries(userCounts)
@@ -1443,7 +1452,7 @@
             });
 
             // Buildings circle layer - uses pre-computed centroids (simple points)
-            // This guarantees ALL 49,808 buildings visible at ANY zoom level
+            // This guarantees ALL buildings visible at ANY zoom level
             map.addLayer({
                 id: 'buildings-circles-layer',
                 type: 'circle',
