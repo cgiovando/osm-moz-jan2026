@@ -12,9 +12,9 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **68,000+** features mapped (and growing daily)
-- **349+** contributors
-- **3** HOT project areas: Chicumbane, Massingir, Cidade De Xai Xai
+- **82,000+** features mapped (and growing daily)
+- **400+** contributors
+- **6** HOT project areas: Chicumbane, Massingir, Cidade De Xai Xai, Guija 01, Guija 02, Chinhacanine
 - **13,000+** peak day edits (January 25, 2026)
 - Date range: January 23, 2026 onwards (flood response period)
 - **Data updated daily at 00:00 UTC**
