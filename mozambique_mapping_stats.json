@@ -1,6 +1,6 @@
 {
-  "total_features": 55960,
-  "unique_contributors": 270,
+  "total_features": 68242,
+  "unique_contributors": 349,
   "top_contributors": [
     [
       "mjgk",
@@ -12,7 +12,7 @@
     ],
     [
       "EsthersGeo",
-      2657
+      2790
     ],
     [
       "JPMiene",
@@ -20,67 +20,67 @@
     ],
     [
       "Dimitrios Spatharis",
-      1811
+      1958
     ],
     [
       "mepng",
       1789
     ],
     [
+      "SomethingEllis",
+      1538
+    ],
+    [
       "Wurzel3",
-      1445
+      1457
     ],
     [
       "Kraan46",
-      1247
+      1406
+    ],
+    [
+      "Bj\u00f6rn Stieler",
+      1337
+    ],
+    [
+      "Sally Mlingi",
+      1196
     ],
     [
       "Norbert Dichter",
       1050
     ],
     [
-      "SomethingEllis",
-      980
-    ],
-    [
       "Adrian Shobrooke",
       882
     ],
     [
-      "Sally Mlingi",
-      832
-    ],
-    [
-      "arpprasad07",
-      718
+      "DMcDowall",
+      773
     ],
     [
       "hebolz",
-      703
+      736
     ],
     [
-      "DMcDowall",
-      682
+      "arpprasad07",
+      715
+    ],
+    [
+      "fondolucy",
+      681
+    ],
+    [
+      "juf Carla",
+      658
+    ],
+    [
+      "Justinebaekc",
+      568
     ],
     [
       "Metauro",
-      526
-    ],
-    [
-      "Palolo",
-      515
-    ],
-    [
-      "BB486",
-      503
-    ],
-    [
-      "melody_Tej",
-      503
-    ],
-    [
-      "BR_pebble",
-      469
+      522
     ]
   ],
   "edits_by_date": [
@@ -94,23 +94,23 @@
     ],
     [
       "2026-01-25",
-      12964
+      12940
     ],
     [
       "2026-01-26",
-      12397
+      12370
     ],
     [
       "2026-01-27",
-      8784
+      8696
     ],
     [
       "2026-01-28",
-      9049
+      9025
     ],
     [
       "2026-01-29",
-      475
+      476
     ],
     [
       "2026-01-30",
@@ -118,27 +118,27 @@
     ],
     [
       "2026-01-31",
-      1001
+      1000
     ],
     [
       "2026-02-01",
-      452
+      451
     ],
     [
       "2026-02-02",
-      1233
+      3231
     ],
     [
       "2026-02-03",
-      362
+      4344
     ],
     [
       "2026-02-04",
-      2051
+      4092
     ],
     [
       "2026-02-05",
-      41
+      4466
     ]
   ],
   "date_range": {
