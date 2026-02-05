@@ -67,6 +67,84 @@ def load_existing_geojson(filepath):
     return None
 
 
+def _extract_all_coords(geometry):
+    """Recursively extract all [lon, lat] pairs from any GeoJSON geometry type."""
+    coords = []
+    geom_type = geometry.get("type", "")
+    raw_coords = geometry.get("coordinates", [])
+
+    if geom_type == "Point":
+        coords.append(raw_coords)
+    elif geom_type in ("MultiPoint", "LineString"):
+        coords.extend(raw_coords)
+    elif geom_type in ("MultiLineString", "Polygon"):
+        for ring in raw_coords:
+            coords.extend(ring)
+    elif geom_type == "MultiPolygon":
+        for polygon in raw_coords:
+            for ring in polygon:
+                coords.extend(ring)
+    elif geom_type == "GeometryCollection":
+        for geom in geometry.get("geometries", []):
+            coords.extend(_extract_all_coords(geom))
+    return coords
+
+
+def load_hot_project_bboxes(filepath="hot_projects.geojson"):
+    """
+    Load HOT project areas from hot_projects.geojson and compute bounding boxes.
+
+    Returns a list of (name, bbox) tuples where bbox is (south, west, north, east).
+    Falls back to CHICUMBANE_BBOX if the file is missing, empty, or malformed.
+    """
+    if not os.path.exists(filepath):
+        print(f"  {filepath} not found, falling back to CHICUMBANE_BBOX")
+        return [("chicumbane_fallback", CHICUMBANE_BBOX)]
+
+    try:
+        with open(filepath, 'r') as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, IOError) as e:
+        print(f"  Error reading {filepath}: {e}, falling back to CHICUMBANE_BBOX")
+        return [("chicumbane_fallback", CHICUMBANE_BBOX)]
+
+    features = data.get("features", [])
+    if not features:
+        print(f"  {filepath} has no features, falling back to CHICUMBANE_BBOX")
+        return [("chicumbane_fallback", CHICUMBANE_BBOX)]
+
+    results = []
+    for feature in features:
+        props = feature.get("properties", {})
+        name = props.get("name", f"project_{props.get('projectId', 'unknown')}")
+        project_id = props.get("projectId", "unknown")
+
+        geometry = feature.get("geometry")
+        if not geometry:
+            continue
+
+        coords = _extract_all_coords(geometry)
+        if not coords:
+            continue
+
+        lons = [c[0] for c in coords]
+        lats = [c[1] for c in coords]
+
+        # Add 0.01-degree buffer around the bounding box
+        buffer = 0.01
+        bbox = (min(lats) - buffer, min(lons) - buffer,
+                max(lats) + buffer, max(lons) + buffer)
+
+        results.append((f"project_{project_id}_{name}", bbox))
+
+    if not results:
+        print(f"  No valid geometries in {filepath}, falling back to CHICUMBANE_BBOX")
+        return [("chicumbane_fallback", CHICUMBANE_BBOX)]
+
+    print(f"  Loaded {len(results)} project areas from {filepath}")
+    return results
+
+
 def merge_geojson(existing, new_features):
     """
     Merge new features into existing GeoJSON.
@@ -342,18 +420,55 @@ def main():
             start_date = FLOOD_START_DATE
             print(f"\nNo previous state found, doing full refresh from {start_date}")
 
-    # Extract data from Chicumbane flood response area (HOT project 39738)
-    try:
-        osm_data = query_osm_with_metadata(
-            CHICUMBANE_BBOX,
-            start_date=start_date,
-            feature_types=["building", "highway", "waterway"]
-        )
-    except requests.exceptions.RequestException as e:
-        print(f"Error querying Overpass API: {e}")
-        return
+    # Load dynamic project areas from HOT projects
+    project_areas = load_hot_project_bboxes()
+    queried_projects = set(state.get("queried_projects", []))
 
-    print(f"\nReceived {len(osm_data.get('elements', []))} elements from OSM")
+    # Query each project area
+    all_elements = {}  # Deduplicate by (type, id)
+    total_queries = len(project_areas)
+
+    for i, (area_name, bbox) in enumerate(project_areas):
+        print(f"\n--- Area {i + 1}/{total_queries}: {area_name} ---")
+
+        # For new projects not seen before, use FLOOD_START_DATE to get full history
+        area_start_date = start_date
+        if not full_refresh and area_name not in queried_projects:
+            area_start_date = FLOOD_START_DATE
+            print(f"  New project area, fetching full history from {area_start_date}")
+
+        try:
+            area_data = query_osm_with_metadata(
+                bbox,
+                start_date=area_start_date,
+                feature_types=["building", "highway", "waterway"]
+            )
+            element_count = len(area_data.get("elements", []))
+            print(f"  Received {element_count} elements")
+
+            # Deduplicate elements by (type, id)
+            for element in area_data.get("elements", []):
+                key = (element.get("type"), element.get("id"))
+                all_elements[key] = element
+
+            # Mark this project as queried
+            queried_projects.add(area_name)
+
+        except requests.exceptions.RequestException as e:
+            print(f"  Error querying area {area_name}: {e}")
+            print(f"  Continuing with remaining areas...")
+
+        # Rate-limit delay between queries (skip after last one)
+        if i < total_queries - 1:
+            print("  Waiting 5s before next query...")
+            time.sleep(5)
+
+    # Combine all deduplicated elements into a single osm_data dict
+    osm_data = {"elements": list(all_elements.values())}
+    print(f"\nTotal unique elements across all areas: {len(all_elements)}")
+
+    # Save queried projects to state
+    state["queried_projects"] = sorted(queried_projects)
 
     # Convert to GeoJSON
     new_geojson = osm_to_geojson_with_timestamps(osm_data)

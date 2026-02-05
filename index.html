@@ -15,6 +15,7 @@
 
         .sidebar {
             width: 280px;
+            flex-shrink: 0;
             background: #16213e;
             padding: 20px;
             overflow-y: auto;
@@ -67,7 +68,7 @@
         }
         .download-link:hover { text-decoration: underline; }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
         #timeline {
             background: #16213e;
@@ -79,8 +80,14 @@
         .timeline-hint { font-size: 0.8em; color: #666; }
         .selected-date { color: #4ecca3; font-weight: 600; }
 
-        .chart-container { position: relative; height: 100px; }
-        .y-axis { position: absolute; left: -45px; top: 0; bottom: 0; width: 40px; }
+        .timeline-scroll-area { display: flex; align-items: flex-start; }
+        .scroll-container { flex: 1; overflow-x: auto; overflow-y: hidden; }
+        .scroll-container::-webkit-scrollbar { height: 6px; }
+        .scroll-container::-webkit-scrollbar-track { background: #1a1a2e; border-radius: 3px; }
+        .scroll-container::-webkit-scrollbar-thumb { background: #4ecca3; border-radius: 3px; }
+
+        .chart-container { position: relative; height: 100px; min-width: 100%; }
+        .y-axis { position: relative; width: 40px; flex-shrink: 0; height: 100px; }
         .y-label { position: absolute; right: 5px; font-size: 9px; color: #555; transform: translateY(-50%); }
         .gridlines { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; }
         .gridline { position: absolute; left: 0; right: 0; border-top: 1px solid #2a2a4a; }
@@ -89,7 +96,7 @@
         .bar-chart { display: flex; align-items: flex-end; height: 100%; gap: 1px; width: 100%; position: relative; z-index: 1; }
         .bar {
             background: linear-gradient(to top, #4ecca3, #45b39d);
-            flex: 1;
+            flex-shrink: 0;
             min-width: 2px;
             cursor: pointer;
             transition: all 0.1s;
@@ -100,7 +107,7 @@
         .bar.dimmed { opacity: 0.3; }
         .bar.day-start { border-left: 1px solid rgba(255,255,255,0.3); }
 
-        .x-axis { position: relative; height: 20px; margin-top: 5px; }
+        .x-axis { position: relative; height: 20px; margin-top: 5px; min-width: 100%; }
         .x-label { font-size: 10px; color: #666; position: absolute; transform: translateX(-50%); white-space: nowrap; }
 
         /* Animation controls */
@@ -313,7 +320,7 @@
     <div class="container">
         <div class="sidebar">
             <h1>Mozambique Flood Response</h1>
-            <p class="subtitle">Coordinated OSM mapping in flood-affected areas in Mozambique - January 2026</p>
+            <p class="subtitle">Coordinated OSM mapping in flood-affected areas in Mozambique - January-February 2026</p>
 
             <div class="stat-card">
                 <div class="stat-value" id="total-features">-</div>
@@ -375,12 +382,16 @@
                     <span class="timeline-title">Edits Over Time</span>
                     <span class="timeline-hint">Click a bar to filter by date <span class="selected-date" id="selected-date-label"></span></span>
                 </div>
-                <div class="chart-container">
+                <div class="timeline-scroll-area">
                     <div class="y-axis" id="y-axis"></div>
-                    <div class="gridlines" id="gridlines"></div>
-                    <div class="bar-chart" id="bar-chart"></div>
+                    <div class="scroll-container" id="scroll-container">
+                        <div class="chart-container">
+                            <div class="gridlines" id="gridlines"></div>
+                            <div class="bar-chart" id="bar-chart"></div>
+                        </div>
+                        <div class="x-axis" id="x-axis"></div>
+                    </div>
                 </div>
-                <div class="x-axis" id="x-axis"></div>
                 <div class="animation-controls">
                     <button class="play-btn" id="play-btn">▶ Play</button>
                     <button class="clear-btn" id="clear-btn">Clear</button>
@@ -762,13 +773,31 @@
             }
         }
 
+        // Minimum bar width in pixels
+        const MIN_BAR_WIDTH = 6;
+
         // Build timeline with hourly bars and day markers
         function buildTimeline(editsByHour, editsByDate) {
             const maxVal = Math.max(...editsByHour.map(d => d[1]));
             buildYAxis(maxVal);
 
             const chart = document.getElementById('bar-chart');
+            const chartContainer = chart.parentElement;
+            const xAxis = document.getElementById('x-axis');
+            const scrollContainer = document.getElementById('scroll-container');
             chart.innerHTML = '';
+
+            const barCount = editsByHour.length;
+            const availableWidth = scrollContainer.clientWidth;
+            const neededWidth = barCount * (MIN_BAR_WIDTH + 1);
+            const totalWidth = Math.max(availableWidth, neededWidth);
+
+            // Set widths on chart container and x-axis
+            chartContainer.style.width = totalWidth + 'px';
+            xAxis.style.width = totalWidth + 'px';
+
+            // Compute individual bar width
+            const barWidth = Math.max(MIN_BAR_WIDTH, Math.floor(availableWidth / barCount) - 1);
 
             // Track day boundaries for markers
             let prevDate = null;
@@ -777,6 +806,7 @@
                 const bar = document.createElement('div');
                 bar.className = 'bar';
                 bar.style.height = `${(count / maxVal) * 100}%`;
+                bar.style.width = barWidth + 'px';
 
                 // Extract date part (YYYY-MM-DD) from timestamp (YYYY-MM-DDTHH)
                 const date = timestamp.slice(0, 10);
@@ -800,7 +830,6 @@
             });
 
             // X-axis labels - show day labels
-            const xAxis = document.getElementById('x-axis');
             xAxis.innerHTML = '';
 
             // Find unique dates and their positions
@@ -819,12 +848,15 @@
                 const label = document.createElement('span');
                 label.className = 'x-label';
                 const [y, m, d] = date.split('-');
-                label.textContent = `${['Jan','Feb','Mar','Apr','May'][parseInt(m)-1]} ${parseInt(d)}`;
+                label.textContent = `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]} ${parseInt(d)}`;
                 // Position label based on where day starts
                 label.style.position = 'absolute';
                 label.style.left = `${(idx / editsByHour.length) * 100}%`;
                 xAxis.appendChild(label);
             });
+
+            // Auto-scroll to the rightmost position (latest data)
+            scrollContainer.scrollLeft = scrollContainer.scrollWidth;
         }
 
         // Build Y-axis
@@ -1206,15 +1238,27 @@
             filterUpToTimestamp(ts);
 
             // Highlight the corresponding hour's bar in the chart
+            let selectedBar = null;
             document.querySelectorAll('.bar').forEach(bar => {
                 bar.classList.remove('selected', 'dimmed');
                 const barHour = bar.dataset.hour;
                 if (barHour === ts) {
                     bar.classList.add('selected');
+                    selectedBar = bar;
                 } else if (barHour > ts) {
                     bar.classList.add('dimmed');
                 }
             });
+
+            // Auto-scroll to keep the selected bar visible
+            if (selectedBar) {
+                const container = document.getElementById('scroll-container');
+                const barRect = selectedBar.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                if (barRect.left < containerRect.left || barRect.right > containerRect.right) {
+                    selectedBar.scrollIntoView({ inline: 'center', behavior: 'auto' });
+                }
+            }
 
             // Wait for map to finish rendering before next frame to prevent artifacts
             const scheduleNext = () => {
@@ -1495,7 +1539,7 @@
                         }
                     });
                     hotProjectsBounds = bounds;
-                    map.fitBounds(bounds, { padding: 50 });
+                    map.fitBounds(bounds, { padding: { top: 100, bottom: 180, left: 340, right: 180 } });
 
                     // Click handler for HOT projects
                     map.on('click', 'hot-projects-fill', (e) => {
@@ -1548,7 +1592,7 @@
                 this._container.innerHTML = '<button type="button" title="Zoom to full extent" style="font-size: 18px;">⌂</button>';
                 this._container.querySelector('button').addEventListener('click', () => {
                     if (hotProjectsBounds) {
-                        map.fitBounds(hotProjectsBounds, { padding: 50 });
+                        map.fitBounds(hotProjectsBounds, { padding: { top: 100, bottom: 180, left: 340, right: 180 } });
                     }
                 });
                 return this._container;
