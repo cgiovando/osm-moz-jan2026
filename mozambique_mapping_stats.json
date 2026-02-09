@@ -1,14 +1,14 @@
 {
-  "total_features": 89103,
-  "unique_contributors": 447,
+  "total_features": 89858,
+  "unique_contributors": 461,
   "top_contributors": [
     [
       "mjgk",
-      8121
+      8120
     ],
     [
       "EsthersGeo",
-      6754
+      6741
     ],
     [
       "chihana",
@@ -16,47 +16,47 @@
     ],
     [
       "magneticred",
-      3061
+      3053
+    ],
+    [
+      "juf Carla",
+      2590
     ],
     [
       "JPMiene",
       2375
     ],
     [
-      "juf Carla",
-      2166
-    ],
-    [
       "Sally Mlingi",
-      2015
-    ],
-    [
-      "SomethingEllis",
-      1899
+      2007
     ],
     [
       "Dimitrios Spatharis",
-      1891
+      1888
+    ],
+    [
+      "SomethingEllis",
+      1883
     ],
     [
       "mepng",
-      1788
-    ],
-    [
-      "Wurzel3",
-      1696
+      1787
     ],
     [
       "Kraan46",
-      1648
+      1705
     ],
     [
-      "Bj\u00f6rn Stieler",
-      1318
+      "Wurzel3",
+      1686
     ],
     [
       "henkzwols",
       1315
+    ],
+    [
+      "Bj\u00f6rn Stieler",
+      1311
     ],
     [
       "Turnierteilnehmer",
@@ -72,15 +72,15 @@
     ],
     [
       "fondolucy",
-      886
+      885
+    ],
+    [
+      "hebolz",
+      813
     ],
     [
       "KingVik",
       805
-    ],
-    [
-      "DMcDowall",
-      769
     ]
   ],
   "edits_by_date": [
@@ -90,11 +90,11 @@
     ],
     [
       "2026-01-24",
-      6353
+      6352
     ],
     [
       "2026-01-25",
-      12785
+      12784
     ],
     [
       "2026-01-26",
@@ -126,31 +126,39 @@
     ],
     [
       "2026-02-02",
-      4519
+      4518
     ],
     [
       "2026-02-03",
-      9202
+      9161
     ],
     [
       "2026-02-04",
-      4071
+      4053
     ],
     [
       "2026-02-05",
-      4705
+      4582
     ],
     [
       "2026-02-06",
-      5869
+      5710
     ],
     [
       "2026-02-07",
-      1103
+      1101
+    ],
+    [
+      "2026-02-08",
+      1096
+    ],
+    [
+      "2026-02-09",
+      5
     ]
   ],
   "date_range": {
     "earliest": "2026-01-23",
-    "latest": "2026-02-07"
+    "latest": "2026-02-09"
   }
 }
