@@ -4,6 +4,78 @@
     {
       "type": "Feature",
       "properties": {
+        "projectId": 42345,
+        "name": "Mozambique Floods, Chongoene01",
+        "status": "PUBLISHED",
+        "priority": "URGENT",
+        "created": "2026-02-12T16:49:48.435000Z",
+        "percentMapped": 5,
+        "percentValidated": 2,
+        "totalContributors": 0,
+        "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces. Around 90 percent of Mozambique\u2019s population lives in adobe homes, which can collapse after just a few days of heavy rain, leaving families exposed and displaced. \n\nHOT is working with [UNICEF](https://www.unicef.org/), [INGD](https://ingd.gov.mz/) (Mozambique Disaster Risk Management Institute) and [OSM Mozambique](https://wiki.openstreetmap.org/wiki/Mozambique) to prioritize a coordinated mapping response. Please contribute to this project to support the response and recovery operations of these organizations.",
+        "url": "https://tasks.hotosm.org/projects/42345"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                33.751506,
+                -24.936999
+              ],
+              [
+                33.73818,
+                -24.955014
+              ],
+              [
+                33.752233,
+                -24.980054
+              ],
+              [
+                33.761925,
+                -25.007723
+              ],
+              [
+                33.705713,
+                -25.01475
+              ],
+              [
+                33.736727,
+                -25.074457
+              ],
+              [
+                33.787608,
+                -25.090696
+              ],
+              [
+                33.939283,
+                -25.015628
+              ],
+              [
+                34.004286,
+                -24.96424
+              ],
+              [
+                33.953118,
+                -24.87393
+              ],
+              [
+                33.782851,
+                -24.920727
+              ],
+              [
+                33.751506,
+                -24.936999
+              ]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
         "projectId": 40959,
         "name": "Mozambique Floods, Massingir-01",
         "status": "ARCHIVED",
@@ -2381,7 +2453,7 @@
   "metadata": {
     "source": "HOT Tasking Manager API",
     "description": "Mozambique flood response project boundaries",
-    "updated": "2026-02-12T01:25:36.237465Z",
-    "project_count": 7
+    "updated": "2026-02-13T01:28:32.223053Z",
+    "project_count": 8
   }
 }

@@ -1,6 +1,6 @@
 {
-  "last_update": "2026-02-12T01:26:33.326635Z",
-  "feature_count": 95968,
+  "last_update": "2026-02-13T01:29:35.551279Z",
+  "feature_count": 97994,
   "queried_projects": [
     "project_39738_Mozambique Floods, Chicumbane",
     "project_40233_Mozambique Floods, Guija 01",
@@ -8,6 +8,7 @@
     "project_40299_Mozambique Floods, Guija 02",
     "project_40365_Mozambique Floods, Massingir",
     "project_40662_Mozambique Floods, Cidade De Xai Xai",
-    "project_40959_Mozambique Floods, Massingir-01"
+    "project_40959_Mozambique Floods, Massingir-01",
+    "project_42345_Mozambique Floods, Chongoene01"
   ]
 }
