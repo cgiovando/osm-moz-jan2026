@@ -1,10 +1,10 @@
 {
-  "total_features": 97994,
-  "unique_contributors": 504,
+  "total_features": 103007,
+  "unique_contributors": 546,
   "top_contributors": [
     [
       "mjgk",
-      8120
+      8147
     ],
     [
       "EsthersGeo",
@@ -16,11 +16,11 @@
     ],
     [
       "magneticred",
-      3830
+      4389
     ],
     [
       "juf Carla",
-      3643
+      3662
     ],
     [
       "JPMiene",
@@ -28,7 +28,7 @@
     ],
     [
       "Sally Mlingi",
-      2007
+      2271
     ],
     [
       "Kraan46",
@@ -51,6 +51,14 @@
       1684
     ],
     [
+      "fondolucy",
+      1416
+    ],
+    [
+      "Adrian Shobrooke",
+      1377
+    ],
+    [
       "henkzwols",
       1309
     ],
@@ -59,8 +67,8 @@
       1295
     ],
     [
-      "Adrian Shobrooke",
-      1246
+      "Owlln",
+      1051
     ],
     [
       "Turnierteilnehmer",
@@ -71,16 +79,8 @@
       1041
     ],
     [
-      "fondolucy",
-      885
-    ],
-    [
-      "hebolz",
-      813
-    ],
-    [
-      "KingVik",
-      805
+      "NoKnow",
+      1022
     ]
   ],
   "edits_by_date": [
@@ -166,15 +166,19 @@
     ],
     [
       "2026-02-12",
-      1591
+      1580
     ],
     [
       "2026-02-13",
-      160
+      5111
+    ],
+    [
+      "2026-02-14",
+      73
     ]
   ],
   "date_range": {
     "earliest": "2026-01-23",
-    "latest": "2026-02-13"
+    "latest": "2026-02-14"
   }
 }
