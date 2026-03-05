@@ -67,6 +67,13 @@ jobs:
             --extend-zooms-if-still-dropping \
             --force \
             mozambique_flood_mapping.geojson
+          tippecanoe \
+            -o building_centroids.pmtiles \
+            -Z7 -z13 \
+            -l building_centroids \
+            -r1 \
+            --force \
+            building_centroids.geojson
 
       - name: Check for changes
         id: check_changes
@@ -75,6 +82,7 @@ jobs:
             hot_projects.geojson \
             mozambique_mapping_stats.json \
             building_centroids.geojson \
+            building_centroids.pmtiles \
             highways_waterways.geojson \
             mozambique_flood_mapping.pmtiles \
             .osm_update_state.json \

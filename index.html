@@ -406,6 +406,7 @@
     <script>
         // Register PMTiles protocol with explicit URL handling
         const PMTILES_URL = new URL('mozambique_flood_mapping.pmtiles', window.location.href).href;
+        const CENTROIDS_PMTILES_URL = new URL('building_centroids.pmtiles', window.location.href).href;
         const p = new pmtiles.PMTiles(PMTILES_URL);
 
         // Add the protocol
@@ -1287,23 +1288,11 @@
             loadHotProjects();
         });
 
-        // Load OSM features - building centroids for circles, PMTiles for building polygons,
+        // Load OSM features - PMTiles for buildings (polygons + centroids),
         // separate GeoJSON for highways/waterways (visible at all zoom levels)
         async function loadOSMFeatures() {
-            // Load data files in parallel
-            const [buildingCentroids, hwData] = await Promise.all([
-                fetch('building_centroids.geojson').then(r => r.json()),
-                fetch('highways_waterways.geojson').then(r => r.json()).catch(() => null)
-            ]);
-            console.log(`Loaded ${buildingCentroids.features.length} building centroids`);
-
-            // Source for building circles - simple points
-            map.addSource('building-centroids', {
-                type: 'geojson',
-                data: buildingCentroids
-            });
-
-            // Source for highways/waterways (full line geometries, visible at all zooms)
+            // Load highways/waterways GeoJSON (small file, needs full geometries)
+            const hwData = await fetch('highways_waterways.geojson').then(r => r.json()).catch(() => null);
             if (hwData) {
                 console.log(`Loaded ${hwData.features.length} highway/waterway features`);
                 map.addSource('highways-waterways', {
@@ -1312,21 +1301,34 @@
                 });
             }
 
-            // PMTiles source for building polygon layers
+            // Try PMTiles sources (efficient tile-based loading)
+            let hasPMTiles = false;
             try {
                 const testResponse = await fetch(PMTILES_URL, { method: 'HEAD' });
-                const acceptRanges = testResponse.headers.get('Accept-Ranges');
-                if (acceptRanges === 'bytes') {
+                if (testResponse.headers.get('Accept-Ranges') === 'bytes') {
                     map.addSource('osm-features-pmtiles', {
                         type: 'vector',
                         url: 'pmtiles://' + PMTILES_URL
                     });
-                    console.log('Using PMTiles for building polygon layers');
-                } else {
-                    console.log('PMTiles not available (no range request support)');
+                    map.addSource('building-centroids', {
+                        type: 'vector',
+                        url: 'pmtiles://' + CENTROIDS_PMTILES_URL
+                    });
+                    hasPMTiles = true;
+                    console.log('Using PMTiles for all building layers');
                 }
             } catch (e) {
                 console.log('PMTiles not available:', e.message);
+            }
+
+            // Fallback: load centroids GeoJSON if PMTiles unavailable
+            if (!hasPMTiles) {
+                console.log('Falling back to GeoJSON for building centroids');
+                const buildingCentroids = await fetch('building_centroids.geojson').then(r => r.json());
+                map.addSource('building-centroids', {
+                    type: 'geojson',
+                    data: buildingCentroids
+                });
             }
 
             addFeatureLayers();
@@ -1399,12 +1401,14 @@
                 });
             }
 
-            // Buildings circle layer - uses pre-computed centroids (simple points)
+            // Buildings circle layer - uses pre-computed centroids
             // This guarantees ALL buildings visible at ANY zoom level
+            const centroidsSourceLayer = hasPMTiles ? { 'source-layer': 'building_centroids' } : {};
             map.addLayer({
                 id: 'buildings-circles-layer',
                 type: 'circle',
-                source: 'building-centroids', // Use centroid points, not polygons
+                source: 'building-centroids',
+                ...centroidsSourceLayer,
                 maxzoom: 14, // Hide at zoom 14+ where polygons take over
                 paint: {
                     'circle-color': '#ff6b6b',
