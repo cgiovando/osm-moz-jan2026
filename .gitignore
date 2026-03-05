@@ -1,0 +1,8 @@
+# Large intermediate data files (generated during CI, not needed in repo)
+mozambique_flood_mapping.geojson
+
+# OS files
+.DS_Store
+
+# Python
+__pycache__/

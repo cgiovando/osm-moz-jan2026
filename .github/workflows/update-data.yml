@@ -71,7 +71,13 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          git add -A
+          git add \
+            hot_projects.geojson \
+            mozambique_mapping_stats.json \
+            building_centroids.geojson \
+            mozambique_flood_mapping.pmtiles \
+            .osm_update_state.json \
+            .gitignore
           if git diff --staged --quiet; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
           else

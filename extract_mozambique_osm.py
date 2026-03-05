@@ -348,6 +348,10 @@ def analyze_contributions(geojson):
     dates = {}
     # Aggregate by hour
     hours = {}
+    # Aggregate hourly stats by feature type (for timeline)
+    stats_by_type = {"building": {}, "highway": {}, "waterway": {}}
+    # Feature counts by type
+    feature_counts = {"building": 0, "highway": 0, "waterway": 0}
 
     for f in features:
         props = f["properties"]
@@ -363,6 +367,14 @@ def analyze_contributions(geojson):
             hour = ts[:13]
             hours[hour] = hours.get(hour, 0) + 1
 
+        # Count by feature type and hourly stats per type
+        for ftype in ("building", "highway", "waterway"):
+            if props.get(ftype):
+                feature_counts[ftype] += 1
+                if ts:
+                    hour = ts[:13]
+                    stats_by_type[ftype][hour] = stats_by_type[ftype].get(hour, 0) + 1
+
     # Sort and get top contributors
     top_users = sorted(users.items(), key=lambda x: -x[1])[:20]
     date_series = sorted(dates.items())
@@ -372,6 +384,8 @@ def analyze_contributions(geojson):
         "unique_contributors": len(users),
         "top_contributors": top_users,
         "edits_by_date": date_series,
+        "feature_counts": feature_counts,
+        "stats_by_type": stats_by_type,
         "date_range": {
             "earliest": min(dates.keys()) if dates else None,
             "latest": max(dates.keys()) if dates else None

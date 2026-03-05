@@ -59,15 +59,6 @@
         .layer-name { flex: 1; font-size: 0.9em; }
         .layer-count { font-size: 0.8em; color: #4ecca3; }
 
-        .download-link {
-            display: block;
-            color: #4ecca3;
-            text-decoration: none;
-            font-size: 0.85em;
-            padding: 5px 0;
-        }
-        .download-link:hover { text-decoration: underline; }
-
         .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
         #timeline {
@@ -361,12 +352,6 @@
                 <span class="layer-count" id="count-hot">0</span>
             </div>
 
-            <div class="section-title">Download Data</div>
-            <a href="mozambique_flood_mapping.geojson" download class="download-link">OSM Features (GeoJSON)</a>
-            <a href="mozambique_flood_mapping.pmtiles" download class="download-link">OSM Features (PMTiles)</a>
-            <a href="hot_projects.geojson" download class="download-link">HOT Projects (GeoJSON)</a>
-            <a href="mozambique_mapping_stats.json" download class="download-link">Statistics (JSON)</a>
-
             <div class="update-notice">
                 Data updated daily at 00:00 UTC
             </div>
@@ -609,7 +594,7 @@
         let isPlaying = false;
         let animationFrame = null;
 
-        // Stats by feature type (computed from GeoJSON)
+        // Stats by feature type (loaded from stats JSON)
         let statsByType = { building: {}, highway: {}, waterway: {} };
 
         // Load stats
@@ -621,8 +606,21 @@
                 document.getElementById('total-features').textContent = data.total_features.toLocaleString();
                 document.getElementById('total-contributors').textContent = data.unique_contributors.toLocaleString();
 
-                // Store top contributors (will be populated from GeoJSON if not in stats)
+                // Load hourly stats by feature type (for timeline and stats overlay)
+                if (data.stats_by_type) {
+                    statsByType = data.stats_by_type;
+                }
+
+                // Load feature counts by type (for sidebar)
+                if (data.feature_counts) {
+                    document.getElementById('count-building').textContent = data.feature_counts.building.toLocaleString();
+                    document.getElementById('count-highway').textContent = data.feature_counts.highway.toLocaleString();
+                    document.getElementById('count-waterway').textContent = data.feature_counts.waterway.toLocaleString();
+                }
+
+                // Store and display top contributors
                 topContributors = data.top_contributors || [];
+                populateContributorsList();
 
                 // Build timeline with hourly bars (more detailed view)
                 const hourlyData = data.edits_by_hour || data.edits_by_date;
@@ -630,6 +628,10 @@
 
                 // Setup time slider with hourly data for fine-grained animation
                 setupTimeSlider(hourlyData);
+
+                // Update timeline and stats overlay now that statsByType is loaded
+                updateTimelineForLayers();
+                updateStatsOverlay(null);
             });
 
         // Function to populate contributors list (called after GeoJSON loads)
@@ -1281,92 +1283,23 @@
         map.on('load', () => {
             document.getElementById('loading').style.display = 'none';
 
-            // Try PMTiles first (works on GitHub Pages), fallback to GeoJSON for local dev
             loadOSMFeatures();
             loadHotProjects();
-
-            // Counts are updated dynamically in loadOSMFeatures()
         });
 
-        // Load OSM features - use pre-computed centroids for circles, GeoJSON/PMTiles for polygons
+        // Load OSM features - building centroids for circles, PMTiles for polygons/lines
         async function loadOSMFeatures() {
-            // Load data files in parallel for faster startup
-            const [geojsonData, buildingCentroids] = await Promise.all([
-                fetch('mozambique_flood_mapping.geojson').then(r => r.json()),
-                fetch('building_centroids.geojson').then(r => r.json())
-            ]);
-
+            // Load building centroids for circle layer
+            const buildingCentroids = await fetch('building_centroids.geojson').then(r => r.json());
             console.log(`Loaded ${buildingCentroids.features.length} pre-computed building centroids`);
 
-            // Compute hourly stats by feature type for dynamic timeline
-            // Also extract top contributors from user field
-            statsByType = { building: {}, highway: {}, waterway: {} };
-            const userCounts = {};
-            geojsonData.features.forEach(f => {
-                const props = f.properties;
-                const ts = props.timestamp ? props.timestamp.slice(0, 13) : null; // YYYY-MM-DDTHH
-
-                // Count by user
-                const user = props.user;
-                if (user) {
-                    userCounts[user] = (userCounts[user] || 0) + 1;
-                }
-
-                if (!ts) return;
-
-                if (props.building) {
-                    statsByType.building[ts] = (statsByType.building[ts] || 0) + 1;
-                }
-                if (props.highway) {
-                    statsByType.highway[ts] = (statsByType.highway[ts] || 0) + 1;
-                }
-                if (props.waterway) {
-                    statsByType.waterway[ts] = (statsByType.waterway[ts] || 0) + 1;
-                }
-            });
-
-            // Update sidebar feature layer counts dynamically
-            const featureCounts = { building: 0, highway: 0, waterway: 0 };
-            geojsonData.features.forEach(f => {
-                const p = f.properties || {};
-                if (p.building) featureCounts.building++;
-                if (p.highway) featureCounts.highway++;
-                if (p.waterway) featureCounts.waterway++;
-            });
-            document.getElementById('count-building').textContent = featureCounts.building.toLocaleString();
-            document.getElementById('count-highway').textContent = featureCounts.highway.toLocaleString();
-            document.getElementById('count-waterway').textContent = featureCounts.waterway.toLocaleString();
-
-            // Set top contributors (sorted by count, top 20)
-            topContributors = Object.entries(userCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 20);
-            populateContributorsList();
-
-            console.log('Computed stats by feature type for dynamic timeline');
-            console.log(`Found ${topContributors.length} top contributors`);
-
-            // Update timeline with current layer selection
-            updateTimelineForLayers();
-
-            // Initialize stats overlay now that data is loaded
-            updateStatsOverlay(null);
-
-            // Source for building circles - simple points, no simplification possible
+            // Source for building circles - simple points
             map.addSource('building-centroids', {
                 type: 'geojson',
                 data: buildingCentroids
             });
 
-            // Source for full geometries (polygons, lines)
-            map.addSource('osm-features-geojson', {
-                type: 'geojson',
-                data: geojsonData,
-                tolerance: 0.5 // Reduced simplification
-            });
-
-            // Try PMTiles for polygon layers (more efficient at high zoom)
-            let usePMTiles = false;
+            // PMTiles source for polygon/line layers
             try {
                 const testResponse = await fetch(PMTILES_URL, { method: 'HEAD' });
                 const acceptRanges = testResponse.headers.get('Accept-Ranges');
@@ -1375,81 +1308,83 @@
                         type: 'vector',
                         url: 'pmtiles://' + PMTILES_URL
                     });
-                    usePMTiles = true;
-                    console.log('Using PMTiles for polygon layers, GeoJSON for circles');
+                    console.log('Using PMTiles for polygon/line layers, centroids for circles');
+                } else {
+                    console.log('PMTiles not available (no range request support)');
                 }
             } catch (e) {
-                console.log('PMTiles not available, using GeoJSON for all layers:', e.message);
+                console.log('PMTiles not available:', e.message);
             }
 
-            addFeatureLayers(usePMTiles);
+            addFeatureLayers();
         }
 
-        // Add feature layers
-        function addFeatureLayers(usePMTiles) {
-            // For polygon layers: use PMTiles if available (efficient), otherwise GeoJSON
-            const polygonSource = usePMTiles ? 'osm-features-pmtiles' : 'osm-features-geojson';
-            const polygonSourceLayerProp = usePMTiles ? { 'source-layer': 'osm_features' } : {};
+        // Add feature layers (PMTiles for polygons/lines, centroids for circles)
+        function addFeatureLayers() {
+            const hasPMTiles = !!map.getSource('osm-features-pmtiles');
+            const sourceLayerProp = hasPMTiles ? { 'source-layer': 'osm_features' } : {};
 
-            // For circle layer: always use GeoJSON (ensures ALL features visible at any zoom)
-            const circleSource = 'osm-features-geojson';
+            // Polygon/line layers require PMTiles
+            if (hasPMTiles) {
+                // Buildings layer (polygons) - only visible at zoom 14+
+                map.addLayer({
+                    id: 'buildings-layer',
+                    type: 'fill',
+                    source: 'osm-features-pmtiles',
+                    ...sourceLayerProp,
+                    minzoom: 14,
+                    filter: ['has', 'building'],
+                    paint: {
+                        'fill-color': '#ff6b6b',
+                        'fill-opacity': 0.85,
+                        'fill-outline-color': '#c0392b',
+                        'fill-antialias': true
+                    }
+                });
 
-            // Buildings layer (polygons) - only visible at zoom 14+
-            map.addLayer({
-                id: 'buildings-layer',
-                type: 'fill',
-                source: polygonSource,
-                ...polygonSourceLayerProp,
-                minzoom: 14, // Only show actual polygons at high zoom
-                filter: ['has', 'building'],
-                paint: {
-                    'fill-color': '#ff6b6b',
-                    'fill-opacity': 0.85,
-                    'fill-outline-color': '#c0392b',
-                    'fill-antialias': true
-                }
-            });
+                // Buildings outline layer - only visible at zoom 14+
+                map.addLayer({
+                    id: 'buildings-outline-layer',
+                    type: 'line',
+                    source: 'osm-features-pmtiles',
+                    ...sourceLayerProp,
+                    minzoom: 14,
+                    filter: ['has', 'building'],
+                    paint: {
+                        'line-color': '#ff4444',
+                        'line-width': 0.5,
+                        'line-opacity': 0.9
+                    }
+                });
 
-            // Buildings outline layer - only visible at zoom 14+
-            map.addLayer({
-                id: 'buildings-outline-layer',
-                type: 'line',
-                source: polygonSource,
-                ...polygonSourceLayerProp,
-                minzoom: 14, // Only show outlines at high zoom
-                filter: ['has', 'building'],
-                paint: {
-                    'line-color': '#ff4444',
-                    'line-width': 0.5,
-                    'line-opacity': 0.9
-                }
-            });
+                // Highways layer (off by default)
+                map.addLayer({
+                    id: 'highways-layer',
+                    type: 'line',
+                    source: 'osm-features-pmtiles',
+                    ...sourceLayerProp,
+                    filter: ['has', 'highway'],
+                    paint: {
+                        'line-color': '#3498db',
+                        'line-width': 2,
+                        'line-opacity': 0
+                    }
+                });
 
-            // Highways layer - use GeoJSON for consistency (off by default)
-            map.addLayer({
-                id: 'highways-layer',
-                type: 'line',
-                source: circleSource,
-                filter: ['has', 'highway'],
-                paint: {
-                    'line-color': '#3498db',
-                    'line-width': 2,
-                    'line-opacity': 0 // Off by default
-                }
-            });
-
-            // Waterways layer - use GeoJSON for consistency (off by default)
-            map.addLayer({
-                id: 'waterways-layer',
-                type: 'line',
-                source: circleSource,
-                filter: ['has', 'waterway'],
-                paint: {
-                    'line-color': '#2ecc71',
-                    'line-width': 3,
-                    'line-opacity': 0 // Off by default
-                }
-            });
+                // Waterways layer (off by default)
+                map.addLayer({
+                    id: 'waterways-layer',
+                    type: 'line',
+                    source: 'osm-features-pmtiles',
+                    ...sourceLayerProp,
+                    filter: ['has', 'waterway'],
+                    paint: {
+                        'line-color': '#2ecc71',
+                        'line-width': 3,
+                        'line-opacity': 0
+                    }
+                });
+            }
 
             // Buildings circle layer - uses pre-computed centroids (simple points)
             // This guarantees ALL buildings visible at ANY zoom level
