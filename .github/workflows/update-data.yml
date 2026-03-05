@@ -69,7 +69,7 @@ jobs:
             mozambique_flood_mapping.geojson
           tippecanoe \
             -o building_centroids.pmtiles \
-            -Z7 -z13 \
+            -Z5 -z13 \
             -l building_centroids \
             --drop-densest-as-needed \
             --extend-zooms-if-still-dropping \
