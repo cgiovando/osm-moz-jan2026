@@ -71,7 +71,8 @@ jobs:
             -o building_centroids.pmtiles \
             -Z7 -z13 \
             -l building_centroids \
-            -r1 \
+            --drop-densest-as-needed \
+            --extend-zooms-if-still-dropping \
             --force \
             building_centroids.geojson
 
