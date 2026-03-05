@@ -75,6 +75,7 @@ jobs:
             hot_projects.geojson \
             mozambique_mapping_stats.json \
             building_centroids.geojson \
+            highways_waterways.geojson \
             mozambique_flood_mapping.pmtiles \
             .osm_update_state.json \
             .gitignore

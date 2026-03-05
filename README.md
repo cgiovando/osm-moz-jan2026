@@ -1,6 +1,6 @@
 # Mozambique Flood Response - OSM Mapping Visualization
 
-Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January-February 2026 Mozambique floods.
+Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January 2026 Mozambique floods and subsequent Tropical Cyclone Gezani.
 
 ## Live Demo
 
@@ -8,16 +8,29 @@ Interactive visualization of coordinated OpenStreetMap mapping efforts in respon
 
 ## Overview
 
-In January 2026, severe flooding affected over 600,000 people in Mozambique, with Gaza, Sofala, and Maputo provinces hit hardest. This visualization shows the rapid coordinated mapping response by the OpenStreetMap community across multiple HOT Tasking Manager project areas.
+In January 2026, severe flooding affected over 600,000 people in Mozambique, with Gaza, Sofala, and Maputo provinces hit hardest. In February, Tropical Cyclone Gezani brought additional flooding to the region. This visualization shows the rapid coordinated mapping response by the OpenStreetMap community across multiple HOT Tasking Manager project areas.
 
 ### Key Statistics
 
-- **82,000+** features mapped (and growing daily)
-- **400+** contributors
-- **6** HOT project areas: Chicumbane, Massingir, Cidade De Xai Xai, Guija 01, Guija 02, Chinhacanine
-- **13,000+** peak day edits (January 25, 2026)
-- Date range: January 23, 2026 onwards (flood response period)
+- **273,000+** features mapped (and growing daily)
+- **1,090+** contributors
+- **9** HOT project areas across Gaza Province
+- Date range: January 23 – March 5, 2026 (and counting)
 - **Data updated daily at 00:00 UTC**
+
+## HOT Project Areas
+
+| Project | ID | Status |
+|---------|----|--------|
+| Chicumbane | [#39738](https://tasks.hotosm.org/projects/39738) | ARCHIVED |
+| Guija 01 | [#40233](https://tasks.hotosm.org/projects/40233) | ARCHIVED |
+| Chinhacanine | [#40266](https://tasks.hotosm.org/projects/40266) | ARCHIVED |
+| Guija 02 | [#40299](https://tasks.hotosm.org/projects/40299) | ARCHIVED |
+| Massingir | [#40365](https://tasks.hotosm.org/projects/40365) | ARCHIVED |
+| Cidade De Xai Xai | [#40662](https://tasks.hotosm.org/projects/40662) | ARCHIVED |
+| Massingir-01 | [#40959](https://tasks.hotosm.org/projects/40959) | ARCHIVED |
+| Chongoene01 | [#42345](https://tasks.hotosm.org/projects/42345) | ARCHIVED |
+| TC GEZANI 26, Massinga 1 | [#42873](https://tasks.hotosm.org/projects/42873) | PUBLISHED |
 
 ## Features
 
@@ -30,7 +43,6 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 - **Basemap Switcher**: Choose between CARTO Dark, CARTO Light, OSM Humanitarian, or ESRI Satellite
 - **Overview Map**: Mini locator map showing current viewport location within Mozambique
 - **HOT Project Boundaries**: Overlay of Humanitarian OpenStreetMap Team Tasking Manager projects
-- **Data Downloads**: Download GeoJSON, PMTiles, and JSON data directly from the interface
 - **URL Hash**: Shareable URLs with zoom/lat/lng parameters
 
 ## Technology
@@ -57,7 +69,7 @@ This visualization updates automatically every day at **00:00 UTC** via GitHub A
 1. **Dynamic HOT project discovery**: Searches for new Mozambique flood-related projects on the HOT Tasking Manager (active, published, and archived)
 2. **Multi-area OSM extraction**: Queries each project area independently via Overpass API, with deduplication across overlapping areas
 3. **Incremental updates**: Only fetches changes since the last update, making daily runs fast and efficient
-4. **Automatic data processing**: Regenerates PMTiles, building centroids, and statistics
+4. **Automatic data processing**: Regenerates PMTiles, building centroids, highway/waterway GeoJSON, and statistics
 5. **Auto-commit**: Changes are committed and deployed to GitHub Pages
 
 ### Manual refresh
@@ -72,14 +84,14 @@ To trigger a manual update or force a full data refresh:
 | File | Description |
 |------|-------------|
 | `index.html` | Interactive web visualization (MapLibre GL JS) |
-| `mozambique_flood_mapping.geojson` | OSM features with timestamps and contributor info |
-| `mozambique_flood_mapping.pmtiles` | OSM features as PMTiles for efficient tile serving |
+| `mozambique_flood_mapping.pmtiles` | Building polygons as PMTiles for efficient tile serving |
 | `building_centroids.geojson` | Pre-computed building centroids for fast low-zoom rendering |
+| `highways_waterways.geojson` | Highway and waterway line features (GeoJSON) |
 | `hot_projects.geojson` | HOT Tasking Manager project boundaries |
-| `mozambique_mapping_stats.json` | Aggregated mapping statistics (hourly and daily) |
+| `mozambique_mapping_stats.json` | Aggregated mapping statistics (hourly by type, daily, contributors) |
 | `extract_mozambique_osm.py` | Python script to extract OSM data (supports incremental updates) |
 | `fetch_hot_projects.py` | Python script to dynamically discover HOT project boundaries |
-| `compute_centroids.py` | Python script to generate building centroids |
+| `compute_centroids.py` | Python script to generate building centroids and extract highways/waterways |
 | `.github/workflows/update-data.yml` | GitHub Actions workflow for automated daily updates |
 
 ## References
@@ -88,24 +100,15 @@ To trigger a manual update or force a full data refresh:
 - [HOT Tasking Manager - Mozambique Projects](https://tasks.hotosm.org/explore?text=mozambique)
 - [OpenStreetMap](https://www.openstreetmap.org/)
 
-## AI-Generated Code Disclaimer
+## AI-assisted development
 
-**The majority of this application's code was generated with assistance from AI tools.**
+> This project was developed with significant assistance from AI coding tools.
 
-### Tools Used
-- **Claude** (Anthropic) - Code generation, debugging, and documentation
-
-### What This Means
-- The codebase was largely generated by AI based on requirements and prompts
+- **[Claude Code](https://claude.ai/claude-code)** (Anthropic) — code generation, architecture, debugging, and documentation
 - All functionality has been tested and verified to work as intended
-- Features have undergone human review for usability and correctness
+- Features and infrastructure choices have been reviewed and approved by the maintainer
 
-### What This Doesn't Mean
-- This is not a traditional hand-coded application
-- The code may not have undergone line-by-line professional developer review
-
-### Transparency
-This disclosure is made in adherence to emerging best practices for transparency in AI-assisted software development. We believe in being upfront about how this application was created.
+This disclosure follows emerging best practices for transparency in AI-assisted software development.
 
 ## License
 

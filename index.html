@@ -1287,11 +1287,15 @@
             loadHotProjects();
         });
 
-        // Load OSM features - building centroids for circles, PMTiles for polygons/lines
+        // Load OSM features - building centroids for circles, PMTiles for building polygons,
+        // separate GeoJSON for highways/waterways (visible at all zoom levels)
         async function loadOSMFeatures() {
-            // Load building centroids for circle layer
-            const buildingCentroids = await fetch('building_centroids.geojson').then(r => r.json());
-            console.log(`Loaded ${buildingCentroids.features.length} pre-computed building centroids`);
+            // Load data files in parallel
+            const [buildingCentroids, hwData] = await Promise.all([
+                fetch('building_centroids.geojson').then(r => r.json()),
+                fetch('highways_waterways.geojson').then(r => r.json()).catch(() => null)
+            ]);
+            console.log(`Loaded ${buildingCentroids.features.length} building centroids`);
 
             // Source for building circles - simple points
             map.addSource('building-centroids', {
@@ -1299,7 +1303,16 @@
                 data: buildingCentroids
             });
 
-            // PMTiles source for polygon/line layers
+            // Source for highways/waterways (full line geometries, visible at all zooms)
+            if (hwData) {
+                console.log(`Loaded ${hwData.features.length} highway/waterway features`);
+                map.addSource('highways-waterways', {
+                    type: 'geojson',
+                    data: hwData
+                });
+            }
+
+            // PMTiles source for building polygon layers
             try {
                 const testResponse = await fetch(PMTILES_URL, { method: 'HEAD' });
                 const acceptRanges = testResponse.headers.get('Accept-Ranges');
@@ -1308,7 +1321,7 @@
                         type: 'vector',
                         url: 'pmtiles://' + PMTILES_URL
                     });
-                    console.log('Using PMTiles for polygon/line layers, centroids for circles');
+                    console.log('Using PMTiles for building polygon layers');
                 } else {
                     console.log('PMTiles not available (no range request support)');
                 }
@@ -1357,12 +1370,14 @@
                     }
                 });
 
-                // Highways layer (off by default)
+            }
+
+            // Highways and waterways use GeoJSON source (visible at all zoom levels)
+            if (map.getSource('highways-waterways')) {
                 map.addLayer({
                     id: 'highways-layer',
                     type: 'line',
-                    source: 'osm-features-pmtiles',
-                    ...sourceLayerProp,
+                    source: 'highways-waterways',
                     filter: ['has', 'highway'],
                     paint: {
                         'line-color': '#3498db',
@@ -1371,12 +1386,10 @@
                     }
                 });
 
-                // Waterways layer (off by default)
                 map.addLayer({
                     id: 'waterways-layer',
                     type: 'line',
-                    source: 'osm-features-pmtiles',
-                    ...sourceLayerProp,
+                    source: 'highways-waterways',
                     filter: ['has', 'waterway'],
                     paint: {
                         'line-color': '#2ecc71',

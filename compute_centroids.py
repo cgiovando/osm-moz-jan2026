@@ -138,26 +138,55 @@ def process_geojson(input_path, output_path, feature_filter=None):
     return len(centroids)
 
 
+def extract_features(input_path, output_path, feature_filter):
+    """
+    Extract features matching a filter, keeping original geometries.
+    """
+    print(f"Reading {input_path}...")
+
+    with open(input_path, 'r') as f:
+        data = json.load(f)
+
+    features = [f for f in data.get("features", []) if feature_filter(f)]
+    print(f"Extracted {len(features)} features")
+
+    output_data = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+    print(f"Writing {output_path}...")
+    with open(output_path, 'w') as f:
+        json.dump(output_data, f)
+
+    output_size = Path(output_path).stat().st_size / (1024 * 1024)
+    print(f"Output size: {output_size:.2f} MB")
+
+    return len(features)
+
+
 def main():
-    # Default paths
     input_file = "mozambique_flood_mapping.geojson"
-    output_file = "building_centroids.geojson"
-
-    # Allow command line arguments
-    if len(sys.argv) >= 2:
-        input_file = sys.argv[1]
-    if len(sys.argv) >= 3:
-        output_file = sys.argv[2]
 
     print("=" * 60)
-    print("Building Centroid Generator")
+    print("Feature Processor")
     print("=" * 60)
 
-    count = process_geojson(input_file, output_file)
+    # Building centroids (points for low-zoom rendering)
+    centroid_count = process_geojson(input_file, "building_centroids.geojson")
+    print(f"Generated {centroid_count} building centroids.\n")
+
+    # Highways + waterways (full geometries, small enough to serve as GeoJSON)
+    hw_count = extract_features(
+        input_file,
+        "highways_waterways.geojson",
+        lambda f: f.get("properties", {}).get("highway") is not None
+                  or f.get("properties", {}).get("waterway") is not None
+    )
+    print(f"Extracted {hw_count} highway/waterway features.")
 
     print("=" * 60)
-    print(f"Done! Generated {count} building centroids.")
-    print(f"Output: {output_file}")
+    print("Done!")
     print("=" * 60)
 
 
