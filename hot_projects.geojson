@@ -9,8 +9,8 @@
         "status": "PUBLISHED",
         "priority": "URGENT",
         "created": "2026-03-05T10:28:59.605000Z",
-        "percentMapped": 70,
-        "percentValidated": 23,
+        "percentMapped": 74,
+        "percentValidated": 25,
         "totalContributors": 0,
         "description": "Recently Mozambique was affected by Severe flooding that has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as the country is also affected by Cyclone Gezani mainly the provinces of Sofala and Inhambane. There are 4 reported fatalities so far.  \n\nHOT is working with [UNICEF](https://www.unicef.org/), [INGD](https://ingd.gov.mz/) (Mozambique Disaster Risk Management Institute) and [OSM Mozambique](https://wiki.openstreetmap.org/wiki/Mozambique) to prioritize a coordinated mapping response. Please contribute to this project to support the response and recovery operations of these organizations. For more info on the wider response please visit: [Cyclone Gezani OSM Wiki Page](https://wiki.openstreetmap.org/wiki/Humanitarian_OSM_Team/Open_Mapping_Hub_Eastern_and_Southern_Africa/Cyclone_Gezani_2026)",
         "url": "https://tasks.hotosm.org/projects/45051"
@@ -697,8 +697,8 @@
         "status": "PUBLISHED",
         "priority": "URGENT",
         "created": "2026-03-05T10:19:15.844000Z",
-        "percentMapped": 34,
-        "percentValidated": 0,
+        "percentMapped": 36,
+        "percentValidated": 6,
         "totalContributors": 0,
         "description": "Severe flooding in Mozambique has affected more than half a million people following heavy rains in the first weeks of the new year, according to the UN Office for the Coordination of Humanitarian Affairs (OCHA). The situation continues to worsen as floodwaters persist and dams keep releasing water to prevent structural failure, causing the number of affected people to rise steadily. Gaza province has been hit hardest, alongside Maputo and Sofala provinces. Around 90 percent of Mozambique\u2019s population lives in adobe homes, which can collapse after just a few days of heavy rain, leaving families exposed and displaced. \n\nHOT is working with [UNICEF](https://www.unicef.org/), [INGD](https://ingd.gov.mz/) (Mozambique Disaster Risk Management Institute) and [OSM Mozambique](https://wiki.openstreetmap.org/wiki/Mozambique) to prioritize a coordinated mapping response. Please contribute to this project to support the response and recovery operations of these organizations.",
         "url": "https://tasks.hotosm.org/projects/45018"
@@ -6333,7 +6333,7 @@
   "metadata": {
     "source": "HOT Tasking Manager API",
     "description": "Mozambique flood response project boundaries",
-    "updated": "2026-03-08T01:25:01.046957Z",
+    "updated": "2026-03-09T01:23:45.929366Z",
     "project_count": 11
   }
 }
