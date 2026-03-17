@@ -1,6 +1,6 @@
 {
-  "last_update": "2026-03-16T01:39:57.371068Z",
-  "feature_count": 331178,
+  "last_update": "2026-03-17T01:33:19.068105Z",
+  "feature_count": 336519,
   "queried_projects": [
     "project_39738_Mozambique Floods, Chicumbane",
     "project_40233_Mozambique Floods, Guija 01",
@@ -12,6 +12,8 @@
     "project_42345_Mozambique Floods, Chongoene01",
     "project_42873_Mozambique TC GEZANI 26, Massinga 1 priority 1",
     "project_45018_Mozambique Floods, Chongoene02",
-    "project_45051_Mozambique TC GEZANI 26, Massinga 1 priority 2"
+    "project_45051_Mozambique TC GEZANI 26, Massinga 1 priority 2",
+    "project_45975_Mozambique Floods, Chongoene03",
+    "project_46008_Mozambique TC GEZANI 26, Massinga 1 priority 3"
   ]
 }
