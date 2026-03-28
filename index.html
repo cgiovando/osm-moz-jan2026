@@ -353,7 +353,8 @@
             </div>
 
             <div class="update-notice">
-                Data updated daily at 00:00 UTC
+                Daily updates stopped - response phase concluded.<br>
+                Need newer data? <a href="https://github.com/cgiovando/osm-moz-jan2026/issues/new" target="_blank" style="color: #2ecc71;">Submit an issue</a>.
             </div>
 
             <div class="ai-disclaimer">
@@ -1321,14 +1322,9 @@
                 console.log('PMTiles not available:', e.message);
             }
 
-            // Fallback: load centroids GeoJSON if PMTiles unavailable
+            // If PMTiles unavailable, building centroids won't render
             if (!hasPMTiles) {
-                console.log('Falling back to GeoJSON for building centroids');
-                const buildingCentroids = await fetch('building_centroids.geojson').then(r => r.json());
-                map.addSource('building-centroids', {
-                    type: 'geojson',
-                    data: buildingCentroids
-                });
+                console.log('PMTiles not available - building centroids will not render');
             }
 
             addFeatureLayers();
@@ -1403,28 +1399,30 @@
 
             // Buildings circle layer - uses pre-computed centroids
             // This guarantees ALL buildings visible at ANY zoom level
-            const centroidsSourceLayer = hasPMTiles ? { 'source-layer': 'building_centroids' } : {};
-            map.addLayer({
-                id: 'buildings-circles-layer',
-                type: 'circle',
-                source: 'building-centroids',
-                ...centroidsSourceLayer,
-                maxzoom: 14, // Hide at zoom 14+ where polygons take over
-                paint: {
-                    'circle-color': '#ff6b6b',
-                    'circle-radius': [
-                        'interpolate', ['linear'], ['zoom'],
-                        7, 0.5,
-                        8, 0.6,
-                        9, 0.8,
-                        10, 1,
-                        11, 1.25,
-                        12, 1.5,
-                        13, 2
-                    ],
-                    'circle-opacity': 0.9
-                }
-            });
+            if (map.getSource('building-centroids')) {
+                const centroidsSourceLayer = hasPMTiles ? { 'source-layer': 'building_centroids' } : {};
+                map.addLayer({
+                    id: 'buildings-circles-layer',
+                    type: 'circle',
+                    source: 'building-centroids',
+                    ...centroidsSourceLayer,
+                    maxzoom: 14, // Hide at zoom 14+ where polygons take over
+                    paint: {
+                        'circle-color': '#ff6b6b',
+                        'circle-radius': [
+                            'interpolate', ['linear'], ['zoom'],
+                            7, 0.5,
+                            8, 0.6,
+                            9, 0.8,
+                            10, 1,
+                            11, 1.25,
+                            12, 1.5,
+                            13, 2
+                        ],
+                        'circle-opacity': 0.9
+                    }
+                });
+            }
 
             // Click handlers for popups
             map.on('click', 'buildings-layer', (e) => showPopup(e));

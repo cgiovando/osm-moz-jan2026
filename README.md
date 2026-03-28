@@ -12,11 +12,10 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **273,000+** features mapped (and growing daily)
-- **1,090+** contributors
+- **278,000+** features mapped
+- **1,117+** contributors
 - **9** HOT project areas across Gaza Province
-- Date range: January 23 – March 5, 2026 (and counting)
-- **Data updated daily at 00:00 UTC**
+- Date range: January 23 - March 28, 2026
 
 ## HOT Project Areas
 
@@ -60,24 +59,11 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 HOT Tasking Manager projects are discovered dynamically by searching for Mozambique flood/cyclone/emergency projects created after January 15, 2026. Active, published, and archived projects are all included. New projects are automatically picked up, and OSM data is extracted from each project's bounding area independently.
 
-## Automated Updates
+## Data Updates
 
-This visualization updates automatically every day at **00:00 UTC** via GitHub Actions.
+Daily automatic updates have been stopped as the flood response phase has concluded. The data reflects OSM mapping activity from January 23 through March 28, 2026.
 
-### How it works
-
-1. **Dynamic HOT project discovery**: Searches for new Mozambique flood-related projects on the HOT Tasking Manager (active, published, and archived)
-2. **Multi-area OSM extraction**: Queries each project area independently via Overpass API, with deduplication across overlapping areas
-3. **Incremental updates**: Only fetches changes since the last update, making daily runs fast and efficient
-4. **Automatic data processing**: Regenerates PMTiles, building centroids, highway/waterway GeoJSON, and statistics
-5. **Auto-commit**: Changes are committed and deployed to GitHub Pages
-
-### Manual refresh
-
-To trigger a manual update or force a full data refresh:
-1. Go to [Actions](../../actions) → "Update Map Data"
-2. Click "Run workflow"
-3. Optionally check "Full data refresh" to ignore incremental updates
+If you need a data refresh with more recent OSM edits, please [submit an issue](../../issues/new) requesting updated data. The update workflow can still be triggered manually.
 
 ## Files
 
@@ -85,7 +71,7 @@ To trigger a manual update or force a full data refresh:
 |------|-------------|
 | `index.html` | Interactive web visualization (MapLibre GL JS) |
 | `mozambique_flood_mapping.pmtiles` | Building polygons as PMTiles for efficient tile serving |
-| `building_centroids.geojson` | Pre-computed building centroids for fast low-zoom rendering |
+| `building_centroids.pmtiles` | Pre-computed building centroids as PMTiles for fast low-zoom rendering |
 | `highways_waterways.geojson` | Highway and waterway line features (GeoJSON) |
 | `hot_projects.geojson` | HOT Tasking Manager project boundaries |
 | `mozambique_mapping_stats.json` | Aggregated mapping statistics (hourly by type, daily, contributors) |

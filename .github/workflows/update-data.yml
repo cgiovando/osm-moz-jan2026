@@ -1,11 +1,9 @@
 name: Update Map Data
 
 on:
-  schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 0 * * *'
+  # Daily schedule disabled - response phase concluded (was: '0 0 * * *')
+  # Can still be triggered manually via workflow_dispatch
   workflow_dispatch:
-    # Allow manual trigger from GitHub UI
     inputs:
       full_refresh:
         description: 'Full data refresh (ignore incremental)'
@@ -76,13 +74,16 @@ jobs:
             --force \
             building_centroids.geojson
 
+      - name: Remove large GeoJSON from tracking
+        run: |
+          git rm --cached building_centroids.geojson 2>/dev/null || true
+
       - name: Check for changes
         id: check_changes
         run: |
           git add \
             hot_projects.geojson \
             mozambique_mapping_stats.json \
-            building_centroids.geojson \
             building_centroids.pmtiles \
             highways_waterways.geojson \
             mozambique_flood_mapping.pmtiles \

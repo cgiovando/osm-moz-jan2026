@@ -1,5 +1,6 @@
 # Large intermediate data files (generated during CI, not needed in repo)
 mozambique_flood_mapping.geojson
+building_centroids.geojson
 
 # OS files
 .DS_Store
