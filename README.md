@@ -12,9 +12,9 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 
 ### Key Statistics
 
-- **278,000+** features mapped
-- **1,117+** contributors
-- **9** HOT project areas across Gaza Province
+- **404,000+** features mapped (392,929 buildings, 11,303 highways, 76 waterways)
+- **1,515** contributors
+- **13** HOT project areas across Gaza and Inhambane Provinces
 - Date range: January 23 - March 28, 2026
 
 ## HOT Project Areas
@@ -29,7 +29,11 @@ In January 2026, severe flooding affected over 600,000 people in Mozambique, wit
 | Cidade De Xai Xai | [#40662](https://tasks.hotosm.org/projects/40662) | ARCHIVED |
 | Massingir-01 | [#40959](https://tasks.hotosm.org/projects/40959) | ARCHIVED |
 | Chongoene01 | [#42345](https://tasks.hotosm.org/projects/42345) | ARCHIVED |
-| TC GEZANI 26, Massinga 1 | [#42873](https://tasks.hotosm.org/projects/42873) | PUBLISHED |
+| TC GEZANI 26, Massinga 1 priority 1 | [#42873](https://tasks.hotosm.org/projects/42873) | ARCHIVED |
+| Chongoene02 | [#45018](https://tasks.hotosm.org/projects/45018) | ARCHIVED |
+| TC GEZANI 26, Massinga 1 priority 2 | [#45051](https://tasks.hotosm.org/projects/45051) | ARCHIVED |
+| Chongoene03 | [#45975](https://tasks.hotosm.org/projects/45975) | PUBLISHED |
+| TC GEZANI 26, Massinga 1 priority 3 | [#46008](https://tasks.hotosm.org/projects/46008) | PUBLISHED |
 
 ## Features
 
