@@ -7,3 +7,8 @@ building_centroids.geojson
 
 # Python
 __pycache__/
+
+.timesheet-log.md
+CLAUDE.md
+PROJECT_NOTES.md
+AGENTS.md
