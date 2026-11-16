@@ -1,5 +1,7 @@
 # Mozambique Flood Response - OSM Mapping Visualization
 
+> **Archived (November 2026).** This project has ended and its data is no longer updated. The map shows OpenStreetMap data as of 2026-04-07.
+
 Interactive visualization of coordinated OpenStreetMap mapping efforts in response to the January 2026 Mozambique floods and subsequent Tropical Cyclone Gezani.
 
 ## Live Demo
